@@ -36,32 +36,7 @@ const priorityColor: Record<string, string> = {
 };
 
 const MOCK_RECOMMENDATIONS: RecommendationsData = {
-  recommendations: [
-    {
-      recommendationId: "REC-101",
-      incidentId: "INC-1004",
-      priority: "high",
-      title: "Rollback Deployment",
-      description: "Rollback main server pods to stable sha b45c21.",
-      mcpServer: "GitHub",
-      status: "pending",
-      confidence: 96,
-      evidence: "DB migration failed: relation user_profile already exists.",
-      businessImpact: "Production downtime checkout returning 500.",
-    },
-    {
-      recommendationId: "REC-102",
-      incidentId: "INC-1005",
-      priority: "medium",
-      title: "Scale replicas",
-      description: "Scale auth service replicas to 5 pods.",
-      mcpServer: "AWS",
-      status: "pending",
-      confidence: 88,
-      evidence: "CPU spike > 95% on auth gateway.",
-      businessImpact: "Slow response times for users.",
-    },
-  ],
+  recommendations: [],
 };
 
 export default function RecommendationWidget() {

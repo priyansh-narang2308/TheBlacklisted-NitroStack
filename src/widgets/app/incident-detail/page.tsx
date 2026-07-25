@@ -154,12 +154,12 @@ export default function IncidentDetailWidget() {
   if (!isReady)
     return <div style={shellStyle}>Connecting to digital twin...</div>;
 
-  const isMock = !data;
-  const incident = data || MOCK_INCIDENT_DETAIL;
+  const isMock = false;
+  const incident = data;
   if (!incident || !incident.incidentId)
     return (
       <div style={shellStyle}>
-        Incident detail report is currently unavailable.
+        No incident selected or report unavailable.
       </div>
     );
 

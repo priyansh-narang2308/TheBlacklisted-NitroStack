@@ -39,11 +39,11 @@ export class ProtocolZeroService
   private notificationLogs: NotificationLog[] = [];
 
   private pollInterval: NodeJS.Timeout | null = null;
-  private incidentIdCounter = 1003; // Start after mock INC-1003
+  private incidentIdCounter = 1000; // Start clean at INC-1001
 
   onApplicationBootstrap() {
-    // Start active monitoring loop by default
-    this.startMonitoring();
+    // Monitoring is manual by default unless started via tools/UI
+    // this.startMonitoring();
   }
 
   onModuleDestroy() {
@@ -530,7 +530,8 @@ export class ProtocolZeroService
           "high",
           ["Jira"],
         );
-        sprint.storyPointsRemaining = sprint.storyPointsTotal - capacity - 5;
+        sprint.endDate = daysFromNow(4);
+        sprint.storyPointsRemaining = 30;
       }
     }
   }
@@ -608,7 +609,8 @@ export class ProtocolZeroService
           severity,
           ["Jira"],
         );
-        sprint.endDate = daysFromNow(10);
+        sprint.endDate = daysFromNow(4);
+        sprint.storyPointsRemaining = 30;
       }
     }
   }
@@ -801,7 +803,7 @@ export class ProtocolZeroService
         state.calendar.events.unshift({
           id: `evt-meet-${Date.now()}`,
           title: "API Version Sync Board",
-          type: "release",
+          type: "regular",
           startTime: daysFromNow(0.12),
           endTime: daysFromNow(0.18),
           attendees: ["Sarah Jenkins", "Alex Rivera"],
@@ -816,7 +818,38 @@ export class ProtocolZeroService
       `Triggered simulated scenario: ${type}`,
       "Nominal",
     );
-    this.pollMetrics();
+    switch (type) {
+      case "cicd_failure":
+        this.checkCICDFailures();
+        break;
+      case "merge_failure":
+        this.checkMergeFailures();
+        break;
+      case "deployment_failure":
+        this.checkDeploymentFailures();
+        break;
+      case "issue_spike":
+        this.checkIssueSpikes();
+        break;
+      case "infra_cpu_spike":
+        this.checkInfrastructureMetrics();
+        break;
+      case "sprint_risk":
+        this.checkSprintRisks();
+        break;
+      case "feature_incomplete":
+        this.checkFeatureMeetingOverlap();
+        break;
+      case "deadline_near":
+        this.checkDeadlineNear();
+        break;
+      case "employee_leave":
+        this.checkEmployeeLeaveRisks();
+        break;
+      case "ooo_meeting_overlap":
+        this.checkEmployeeLeaveMeetingOverlap();
+        break;
+    }
     return {
       success: true,
       message: `Scenario ${type} triggered and processed by agents.`,
@@ -1124,7 +1157,11 @@ Provide your executive report:`;
       analysis = await this.callGemini(prompt, systemInstruction);
     }
 
-    if (analysis) {
+    if (
+      analysis &&
+      Array.isArray(analysis.recommendations) &&
+      analysis.recommendations.length > 0
+    ) {
       businessImpact = analysis.businessImpact || businessImpact;
       priority = analysis.priority || priority;
       launchDelay = analysis.launchDelay || launchDelay;
@@ -1406,6 +1443,9 @@ Provide your executive report:`;
     };
 
     inc.recommendations = recommendations;
+    if (recommendations.length > 0) {
+      approvalRequired = true;
+    }
 
     const companyHealth = Math.round(
       this.calculateEngineeringHealthScore() * 0.4 +
@@ -1844,7 +1884,7 @@ Provide your executive report:`;
   }
 
   listIncidents() {
-    return this.incidents.filter((i) => i.status !== "resolved").map((i) => ({
+    return this.incidents.map((i) => ({
       incidentId: i.incidentId,
       title: i.title,
       category: i.category,

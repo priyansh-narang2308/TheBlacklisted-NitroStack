@@ -283,16 +283,7 @@ export const initialEnterpriseState: EnterpriseState = {
     ],
   },
   calendar: {
-    events: [
-      {
-        id: "evt-1",
-        title: "Sprint Demo & Release Review",
-        type: "release",
-        startTime: daysFromNow(0.5), // in 12 hours
-        endTime: daysFromNow(0.6),
-        attendees: ["Alex Rivera", "Sarah Jenkins", "Marcus Chen (PM)"],
-      },
-    ],
+    events: [],
   },
   isMonitoringActive: false,
   lastPollTimestamp: null,

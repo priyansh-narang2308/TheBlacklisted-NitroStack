@@ -23,48 +23,7 @@ interface IncidentList {
   incidents: Incident[];
 }
 
-const MOCK_INCIDENTS: Incident[] = [
-  {
-    incidentId: "INC-1004",
-    title: "Failed Production Database Rollout",
-    category: "Deployment Failure",
-    severity: "critical",
-    status: "analyzed",
-    timestamp: new Date(Date.now() - 3600000).toISOString(),
-    affectedDepartments: ["engineering", "operations"],
-    affectedSystems: ["GitHub", "Datadog"],
-    trigger: "Deploy fail on commit e92a83",
-    rootCause:
-      "Database migrations failed to apply due to schema mismatch on user_profile table.",
-    confidenceScore: 96,
-  },
-  {
-    incidentId: "INC-1005",
-    title: "CPU Spike in Authentication Gateway",
-    category: "Infrastructure Spike",
-    severity: "high",
-    status: "investigating",
-    timestamp: new Date(Date.now() - 7200000).toISOString(),
-    affectedDepartments: ["engineering"],
-    affectedSystems: ["Datadog"],
-    trigger: "CPU utilization exceeded 95%",
-    rootCause: "Thread pool exhaustion under sudden traffic surge.",
-    confidenceScore: 85,
-  },
-  {
-    incidentId: "INC-1006",
-    title: "Sprint Completion Delivery Risk",
-    category: "Sprint Health Alert",
-    severity: "medium",
-    status: "monitoring",
-    timestamp: new Date(Date.now() - 14400000).toISOString(),
-    affectedDepartments: ["engineering", "product"],
-    affectedSystems: ["Jira"],
-    trigger: "Story points remaining exceeds sprint velocity baseline",
-    rootCause: "Scope creep on feature vault integrations.",
-    confidenceScore: 92,
-  },
-];
+const MOCK_INCIDENTS: Incident[] = [];
 
 const severityColors: Record<string, string> = {
   critical: "#ef4444",
