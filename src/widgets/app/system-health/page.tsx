@@ -769,12 +769,12 @@ export default function CompanyHealthWidget() {
                   justifyContent: "space-between",
                 }}
               >
-                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14 }}>
-                  <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 14, gap: 8 }}>
+                  <div style={{ display: "flex", alignItems: "flex-start", gap: 10 }}>
                     <span style={{ fontSize: 13, fontWeight: 700, fontFamily: "monospace", padding: "4px 8px", borderRadius: 6, background: "rgba(255,255,255,0.05)", border: `1px solid ${BORDER}`, color: mcp.color }}>{mcp.icon}</span>
-                    <span style={{ fontSize: 15, fontWeight: 600 }}>{mcp.name}</span>
+                    <span style={{ fontSize: 15, fontWeight: 600, lineHeight: 1.3 }}>{mcp.name}</span>
                   </div>
-                  <span style={{ fontSize: 11, padding: "2px 8px", borderRadius: 999, background: "rgba(16,185,129,0.1)", color: "#34d399", border: "1px solid rgba(16,185,129,0.3)", fontWeight: 600 }}>
+                  <span style={{ flexShrink: 0, fontSize: 11, padding: "2px 8px", borderRadius: 999, background: "rgba(16,185,129,0.1)", color: "#34d399", border: "1px solid rgba(16,185,129,0.3)", fontWeight: 600 }}>
                     ● {mcp.status}
                   </span>
                 </div>
