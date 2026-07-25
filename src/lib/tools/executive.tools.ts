@@ -19,7 +19,7 @@ export class ExecutiveTools {
       "Get the live Protocol-0 dashboard: overall system health score, per-subsystem health, open incidents, and top recommendations.",
     inputSchema: z.object({}),
   })
-  @Widget("company-health")
+  @Widget("system-health")
   @Cache({ ttl: 60 })
   async getCompanyHealth(_input: Record<string, never>, ctx: ExecutionContext) {
     ctx.logger.info("Executive Agent aggregating system health");
@@ -58,7 +58,7 @@ export class ExecutiveTools {
     description: "Legacy alias for getCompanyHealth.",
     inputSchema: z.object({}),
   })
-  @Widget("company-health")
+  @Widget("system-health")
   async get_company_health(input: Record<string, never>, ctx: ExecutionContext) {
     return this.getCompanyHealth(input, ctx);
   }

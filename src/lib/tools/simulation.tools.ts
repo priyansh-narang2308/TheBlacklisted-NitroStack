@@ -56,7 +56,6 @@ export class SimulationTools {
         ),
     }),
   })
-  @Widget("scenario-compare")
   async simulate_disaster(
     input: { targetNode: string },
     ctx: ExecutionContext,
