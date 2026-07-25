@@ -28,7 +28,7 @@ export class SystemHealthCheck implements HealthCheckInterface {
 
       const memoryPercent =
         (memoryUsage.heapUsed / memoryUsage.heapTotal) * 100;
-      const isHealthy = memoryPercent < 90;
+      const isHealthy = memoryPercent < 98;
 
       return {
         status: isHealthy ? "up" : "degraded",

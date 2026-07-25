@@ -336,7 +336,18 @@ export class ProtocolZeroService
       const textOutput = interaction.output_text;
       if (!textOutput) throw new Error("Empty response from Gemini");
 
-      return JSON.parse(textOutput);
+      let cleanedOutput = textOutput;
+      const jsonMatch = textOutput.match(/```json\n([\s\S]*?)\n```/);
+      if (jsonMatch) {
+        cleanedOutput = jsonMatch[1];
+      } else {
+        const fallbackMatch = textOutput.match(/\{[\s\S]*\}/);
+        if (fallbackMatch) {
+          cleanedOutput = fallbackMatch[0];
+        }
+      }
+      
+      return JSON.parse(cleanedOutput);
     } catch (err) {
       console.error("Failed to call Gemini API:", err);
       return null; // Fallback to local rule logic
@@ -962,6 +973,7 @@ export class ProtocolZeroService
     let summary = "Analyzing system telemetry and source changes.";
 
     const geminiKey = process.env.GEMINI_API_KEY;
+    let analysis: any = null;
     if (geminiKey) {
       const systemInstruction = `You are the Infrastructure Agent in a Workplace Digital Twin system. Analyze the incident and output a JSON object containing: "rootCause", "confidenceScore" (0-100), "engineeringRisk" ("healthy" | "warning" | "critical"), and "technicalSummary".`;
       const prompt = `Incident Details:
@@ -974,15 +986,16 @@ Affected Systems: ${inc.affectedSystems.join(", ")}
 
 Provide your engineering analysis:`;
 
-      const analysis = await this.callGemini(prompt, systemInstruction);
-      if (analysis) {
-        rootCause = analysis.rootCause || rootCause;
-        confidence =
-          typeof analysis.confidenceScore === "number"
-            ? analysis.confidenceScore
-            : confidence;
-        summary = analysis.technicalSummary || summary;
-      }
+      analysis = await this.callGemini(prompt, systemInstruction);
+    }
+
+    if (analysis) {
+      rootCause = analysis.rootCause || rootCause;
+      confidence =
+        typeof analysis.confidenceScore === "number"
+          ? analysis.confidenceScore
+          : confidence;
+      summary = analysis.technicalSummary || summary;
     } else {
       // Local fallback rules
       if (cat === "CI/CD Failure") {
@@ -1093,6 +1106,7 @@ Provide your engineering analysis:`;
     let approvalRequired = false;
 
     const geminiKey = process.env.GEMINI_API_KEY;
+    let analysis: any = null;
     if (geminiKey) {
       const systemInstruction = `You are the Incident Commander Agent in a Workplace Digital Twin system. Review the engineering report and generate a business impact report. Output a JSON object containing: "businessImpact" (string), "priority" ("high" | "medium" | "low"), "launchDelay" ("unlikely" | "possible" | "likely"), "customerImpact" ("healthy" | "warning" | "critical"), "revenueRisk" ("healthy" | "warning" | "critical"), and "recommendations" (array of objects with "title", "description", "priority" ("high"|"medium"|"low"), "mcpServer" ("GitHub"|"Jira"|"Datadog"|"Slack"|"Google Calendar")).`;
       const prompt = `Incident Details:
@@ -1107,45 +1121,46 @@ Engineering Risk: ${report?.riskScore}
 
 Provide your executive report:`;
 
-      const analysis = await this.callGemini(prompt, systemInstruction);
-      if (analysis) {
-        businessImpact = analysis.businessImpact || businessImpact;
-        priority = analysis.priority || priority;
-        launchDelay = analysis.launchDelay || launchDelay;
-        customerImpact = analysis.customerImpact || customerImpact;
-        revenueRisk = analysis.revenueRisk || revenueRisk;
+      analysis = await this.callGemini(prompt, systemInstruction);
+    }
 
-        if (Array.isArray(analysis.recommendations)) {
-          recommendations = analysis.recommendations.map(
-            (r: any, idx: number) => ({
-              recommendationId: `REC-${Date.now()}-${idx}`,
-              incidentId: inc.incidentId,
-              priority: r.priority || "medium",
-              title: r.title || "Action",
-              description: r.description || "",
-              mcpServer: r.mcpServer || "Jira",
-              status: "pending",
-              confidence: report?.confidence,
-              evidence: report?.rootCause,
-              businessImpact,
-            }),
-          );
+    if (analysis) {
+      businessImpact = analysis.businessImpact || businessImpact;
+      priority = analysis.priority || priority;
+      launchDelay = analysis.launchDelay || launchDelay;
+      customerImpact = analysis.customerImpact || customerImpact;
+      revenueRisk = analysis.revenueRisk || revenueRisk;
 
-          approvalRequired = recommendations.some((r) =>
-            [
-              "Cancel Meeting",
-              "Reschedule Meeting",
-              "Replacement",
-              "Rollback",
-              "Escalation",
-              "postpone",
-            ].some(
-              (keyword) =>
-                r.title.toLowerCase().includes(keyword.toLowerCase()) ||
-                r.description.toLowerCase().includes(keyword.toLowerCase()),
-            ),
-          );
-        }
+      if (Array.isArray(analysis.recommendations)) {
+        recommendations = analysis.recommendations.map(
+          (r: any, idx: number) => ({
+            recommendationId: `REC-${Date.now()}-${idx}`,
+            incidentId: inc.incidentId,
+            priority: r.priority || "medium",
+            title: r.title || "Action",
+            description: r.description || "",
+            mcpServer: r.mcpServer || "Jira",
+            status: "pending",
+            confidence: report?.confidence,
+            evidence: report?.rootCause,
+            businessImpact,
+          }),
+        );
+
+        approvalRequired = recommendations.some((r) =>
+          [
+            "Cancel Meeting",
+            "Reschedule Meeting",
+            "Replacement",
+            "Rollback",
+            "Escalation",
+            "postpone",
+          ].some(
+            (keyword) =>
+              r.title.toLowerCase().includes(keyword.toLowerCase()) ||
+              r.description.toLowerCase().includes(keyword.toLowerCase()),
+          ),
+        );
       }
     } else {
       // Local fallback rules
