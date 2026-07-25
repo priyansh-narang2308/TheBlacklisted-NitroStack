@@ -1843,7 +1843,7 @@ Provide your executive report:`;
   }
 
   listIncidents() {
-    return this.incidents.map((i) => ({
+    return this.incidents.filter((i) => i.status !== "resolved").map((i) => ({
       incidentId: i.incidentId,
       title: i.title,
       category: i.category,
