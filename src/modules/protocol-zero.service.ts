@@ -2225,9 +2225,90 @@ Provide your executive report:`;
     };
   }
 
-  answerExecutiveQuery(question: string) {
+  async answerExecutiveQuery(question: string) {
+    const apiKey = process.env.GEMINI_API_KEY;
+    if (apiKey) {
+      const open = this.incidents.filter((i) => i.status !== "resolved");
+      const resolved = this.incidents.filter((i) => i.status === "resolved");
+      const health = this.getCompanyHealth();
+      const activePods = this.kubernetesPods;
+      const recs = this.getRecommendations();
+
+      const systemInstruction = `You are the AI Incident Commander Executive Advisor for Protocol-0.
+Your task is to analyze the operational state of the enterprise and answer the executive's query accurately, factually, and professionally based on the provided live data.
+
+Response format MUST be a single JSON object matching this schema:
+{
+  "answer": "Concise natural language answer highlighting live facts, incident names, statuses, or recommendations.",
+  "relatedIncidents": ["INC-1001", "INC-1002"]
+}`;
+
+      const prompt = `Current Enterprise State:
+- Overall Company Health: ${health.companyHealthScore}% (${health.status})
+- Open Incidents: ${JSON.stringify(open.map(i => ({ incidentId: i.incidentId, title: i.title, severity: i.severity, status: i.status })))}
+- Recent Resolved Incidents: ${JSON.stringify(resolved.map(i => ({ incidentId: i.incidentId, title: i.title })))}
+- Recommendations to Resolve: ${JSON.stringify(recs.map(r => ({ recommendationId: r.recommendationId, incidentId: r.incidentId, title: r.title, description: r.description, status: r.status })))}
+- Kubernetes Telemetry: ${JSON.stringify(activePods.map(p => ({ name: p.podName, status: p.status, restarts: p.restarts, reason: p.reason })))}
+
+User's Executive Question:
+"${question}"
+
+Generate the JSON response matching the schema.`;
+
+      try {
+        const geminiResult = await this.callGemini(prompt, systemInstruction);
+        if (geminiResult && typeof geminiResult === "object") {
+          return {
+            question,
+            answer: geminiResult.answer || "No response received.",
+            relatedIncidents: geminiResult.relatedIncidents || [],
+            answeredBy: "Incident Commander Agent",
+          };
+        }
+      } catch (err) {
+        console.error("Gemini call failed inside answerExecutiveQuery:", err);
+      }
+    }
+
+    // Smart local rule fallback
     const q = question.toLowerCase();
     const health = this.getCompanyHealth();
+    const open = this.incidents.filter((i) => i.status !== "resolved");
+
+    if (q.includes("incident") || q.includes("live") || q.includes("open") || q.includes("resolve") || q.includes("active")) {
+      if (open.length === 0) {
+        return {
+          question,
+          answer: `All systems nominal. There are currently no active/live incidents to resolve. Overall company health is at ${health.companyHealthScore}%.`,
+          relatedIncidents: [],
+          answeredBy: "Incident Commander Agent",
+        };
+      }
+      return {
+        question,
+        answer: `There are currently ${open.length} active live incidents under analysis: ${open.map((i) => `${i.incidentId}: "${i.title}" (${i.severity})`).join("; ")}.`,
+        relatedIncidents: open.map((i) => i.incidentId),
+        answeredBy: "Incident Commander Agent",
+      };
+    }
+
+    if (q.includes("recommendation") || q.includes("remediate") || q.includes("action") || q.includes("what is there to")) {
+      const recs = this.getRecommendations().filter((r) => r.status === "pending");
+      if (recs.length === 0) {
+        return {
+          question,
+          answer: "There are currently no pending auto-remediation actions or recommendations.",
+          relatedIncidents: [],
+          answeredBy: "Incident Commander Agent",
+        };
+      }
+      return {
+        question,
+        answer: `We have ${recs.length} pending recommendations to resolve the active issues: ${recs.map((r) => `${r.recommendationId}: "${r.title}"`).join("; ")}. You can approve them using the remediation widget.`,
+        relatedIncidents: [...new Set(recs.map((r) => r.incidentId))],
+        answeredBy: "Incident Commander Agent",
+      };
+    }
 
     if (
       q.includes("engineering") &&
@@ -2278,11 +2359,11 @@ Provide your executive report:`;
       };
     }
     if (q.includes("risk") || q.includes("summar")) {
-      const open = this.incidents.filter((i) => i.status !== "resolved");
+      const openInc = this.incidents.filter((i) => i.status !== "resolved");
       return {
         question,
-        answer: `Company health is ${health.companyHealthScore}% (${health.status}) with ${health.openIncidents} open incidents. Active alerts: ${open.length > 0 ? open.map((i) => `${i.title} (${i.severity})`).join("; ") : "None"}.`,
-        relatedIncidents: open.map((i) => i.incidentId),
+        answer: `Company health is ${health.companyHealthScore}% (${health.status}) with ${health.openIncidents} open incidents. Active alerts: ${openInc.length > 0 ? openInc.map((i) => `${i.title} (${i.severity})`).join("; ") : "None"}.`,
+        relatedIncidents: openInc.map((i) => i.incidentId),
         answeredBy: "Incident Commander Agent",
       };
     }
