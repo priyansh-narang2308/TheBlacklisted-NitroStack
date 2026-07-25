@@ -1,5 +1,3 @@
-import fs from "fs";
-import path from "path";
 import {
   ToolDecorator as Tool,
   Widget,
@@ -50,10 +48,6 @@ export class InfrastructureTools {
   })
   async getKubernetesState(_input: Record<string, never>, ctx: ExecutionContext) {
     ctx.logger.info("Infrastructure Agent analyzing Kubernetes cluster state...");
-    const mockPath = path.resolve(process.cwd(), "mocks/kubernetes_seed.json");
-    if (!fs.existsSync(mockPath)) {
-      throw new Error("Kubernetes state not found. Cluster may be unreachable.");
-    }
-    return JSON.parse(await fs.promises.readFile(mockPath, "utf-8"));
+    return this.twin.getKubernetesState();
   }
 }

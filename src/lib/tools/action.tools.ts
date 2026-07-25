@@ -4,8 +4,10 @@ import {
   Injectable,
   ExecutionContext,
   z,
+  UsePipes,
 } from "@nitrostack/core";
 import { ProtocolZeroService } from "../../modules/protocol-zero.service.js";
+import { ZodValidationPipe } from "../pipes/zod-validation.pipe.js";
 
 @Injectable({ deps: [ProtocolZeroService] })
 export class ActionTools {
@@ -20,6 +22,7 @@ export class ActionTools {
       zero_trust_token: z.string().describe("Cryptographic HMAC validation token"),
     }),
   })
+  @UsePipes(ZodValidationPipe)
   async approveRecommendation(
     input: { recommendationId: string; zero_trust_token: string },
     ctx: ExecutionContext,

@@ -1,3 +1,5 @@
+import fs from "fs";
+import path from "path";
 import {
   Injectable,
   OnApplicationBootstrap,
@@ -1962,5 +1964,32 @@ Provide your executive report:`;
         .map((i) => i.incidentId),
       answeredBy: "Incident Commander Agent",
     };
+  }
+
+  // ---------------------------------------------------------------------------
+  // Data Fetchers for Integrations
+  // ---------------------------------------------------------------------------
+  async getKubernetesState() {
+    const mockPath = path.resolve(process.cwd(), "mocks/kubernetes_seed.json");
+    if (!fs.existsSync(mockPath)) {
+      throw new Error("Kubernetes state not found. Cluster may be unreachable.");
+    }
+    return JSON.parse(await fs.promises.readFile(mockPath, "utf-8"));
+  }
+
+  async getPagerDutyIncidents() {
+    const mockPath = path.resolve(process.cwd(), "mocks/pagerduty_seed.json");
+    if (!fs.existsSync(mockPath)) {
+      return [];
+    }
+    return JSON.parse(await fs.promises.readFile(mockPath, "utf-8"));
+  }
+
+  async getSecurityAuditLogs() {
+    const mockPath = path.resolve(process.cwd(), "mocks/security_audit_seed.json");
+    if (!fs.existsSync(mockPath)) {
+      return [];
+    }
+    return JSON.parse(await fs.promises.readFile(mockPath, "utf-8"));
   }
 }

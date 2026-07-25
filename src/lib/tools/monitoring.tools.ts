@@ -1,5 +1,3 @@
-import fs from "fs";
-import path from "path";
 import {
   ToolDecorator as Tool,
   Widget,
@@ -55,10 +53,6 @@ export class MonitoringTools {
   })
   async getSecurityAuditLogs(_input: Record<string, never>, ctx: ExecutionContext) {
     ctx.logger.info("Monitoring Agent fetching Security Audit logs...");
-    const mockPath = path.resolve(process.cwd(), "mocks/security_audit_seed.json");
-    if (!fs.existsSync(mockPath)) {
-      return [];
-    }
-    return JSON.parse(await fs.promises.readFile(mockPath, "utf-8"));
+    return this.twin.getSecurityAuditLogs();
   }
 }

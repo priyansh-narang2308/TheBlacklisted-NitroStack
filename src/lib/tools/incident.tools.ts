@@ -1,5 +1,3 @@
-import fs from "fs";
-import path from "path";
 import {
   ToolDecorator as Tool,
   Widget,
@@ -87,10 +85,6 @@ export class IncidentTools {
   })
   async getPagerDutyIncidents(_input: Record<string, never>, ctx: ExecutionContext) {
     ctx.logger.info("Incident Commander checking PagerDuty escalation policies...");
-    const mockPath = path.resolve(process.cwd(), "mocks/pagerduty_seed.json");
-    if (!fs.existsSync(mockPath)) {
-      return [];
-    }
-    return JSON.parse(await fs.promises.readFile(mockPath, "utf-8"));
+    return this.twin.getPagerDutyIncidents();
   }
 }

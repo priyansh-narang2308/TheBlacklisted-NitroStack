@@ -47,6 +47,7 @@ export class SimulationTools {
     name: "simulate_disaster",
     description:
       "What-If Disaster Simulator: Simulate the catastrophic failure of a specific sub-system or cloud region to test auto-remediation and cascading impacts.",
+    taskSupport: "optional",
     inputSchema: z.object({
       targetNode: z
         .string()
@@ -63,13 +64,37 @@ export class SimulationTools {
     ctx.logger.warn(
       `Triggering What-If Disaster Simulation for ${input.targetNode}`,
     );
+
+    if (ctx.task) {
+      ctx.task.updateProgress(`Identifying dependencies for ${input.targetNode}...`);
+    }
+
+    // Simulate async work
+    await new Promise(resolve => setTimeout(resolve, 1000));
+
+    if (ctx.task) {
+      ctx.task.throwIfCancelled();
+      ctx.task.updateProgress(`Calculating blast radius...`);
+    }
+
+    // Actually parse state instead of hardcoded strings
+    const health = this.twin.getCompanyHealth();
+    
+    // Simulate async work
+    await new Promise(resolve => setTimeout(resolve, 1000));
+
+    if (ctx.task) {
+      ctx.task.throwIfCancelled();
+      ctx.task.updateProgress(`Generating remediation plan...`);
+    }
+
     return {
       simulationId: `SIM-${Date.now()}`,
       targetNode: input.targetNode,
       cascadingImpact: [
         `${input.targetNode} is offline.`,
         `Dependent services starting to queue.`,
-        `Incident Commander Agent calculating blast radius...`,
+        `Impacted ${health.openIncidents} open incidents across ${health.departments.length} departments.`,
       ],
       estimatedDowntime: "45 minutes",
       recommendedPreemptiveActions: [

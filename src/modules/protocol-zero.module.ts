@@ -8,7 +8,7 @@ import { SimulationTools } from "../lib/tools/simulation.tools.js";
 import { ProtocolZeroService } from "./protocol-zero.service.js";
 import { ProtocolZeroPrompts } from "../lib/prompts/protocol-zero.prompts.js";
 import { ProtocolZeroResources } from "../lib/resources/protocol-zero.resources.js";
-
+import { ZodValidationPipe } from "../lib/pipes/zod-validation.pipe.js";
 
 @Module({
   name: "protocol-zero",
@@ -24,6 +24,6 @@ import { ProtocolZeroResources } from "../lib/resources/protocol-zero.resources.
     ProtocolZeroPrompts,
     ProtocolZeroResources,
   ],
-  providers: [ProtocolZeroService],
+  providers: [ProtocolZeroService, ZodValidationPipe],
 })
 export class ProtocolZeroModule {}
