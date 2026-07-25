@@ -79,30 +79,4 @@ export class ActionTools {
     }
     return result;
   }
-
-  @Tool({
-    name: "approve_action",
-    description: "Legacy alias for approveRecommendation.",
-    inputSchema: z.object({
-      recommendationId: z.string(),
-      approve: z.boolean().default(true),
-      zero_trust_token: z.string().describe("Cryptographic HMAC validation token"),
-    }),
-  })
-  @UseGuards(ZeroTrustGuard)
-  async approve_action(
-    input: { recommendationId: string; approve?: boolean; zero_trust_token: string },
-    ctx: ExecutionContext,
-  ) {
-    const secret = process.env.ZERO_TRUST_SECRET;
-    if (!secret) return { error: "ZERO_TRUST_VIOLATION", hint: "Server missing ZERO_TRUST_SECRET configuration." };
-    const crypto = await import("crypto");
-    const expectedHash = crypto.createHmac("sha256", secret).update(input.recommendationId).digest("hex");
-    if (input.zero_trust_token !== expectedHash) {
-      return { error: "ZERO_TRUST_VIOLATION", hint: "Invalid zero_trust_token cryptographic signature." };
-    }
-
-    const approve = input.approve ?? true;
-    return this.twin.approveAction(input.recommendationId, approve);
-  }
 }

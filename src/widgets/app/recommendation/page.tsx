@@ -48,6 +48,7 @@ export default function RecommendationWidget() {
   const [actionStates, setActionStates] = useState<
     Record<string, { loading: boolean; status?: string; error?: string }>
   >({});
+  const [activeTab, setActiveTab] = useState<"active" | "resolved">("active");
 
   const isDark = theme === "dark";
   const bg = "#111111";
@@ -160,7 +161,13 @@ export default function RecommendationWidget() {
       </div>
     );
 
-  const recommendations = Array.isArray(data) ? data : (data.recommendations ?? []);
+  const allRecs = Array.isArray(data) ? data : (data.recommendations ?? []);
+  const activeRecs = allRecs.filter(r => (actionStates[r.recommendationId]?.status || r.status) === "pending");
+  const resolvedRecs = allRecs.filter(r => {
+    const status = actionStates[r.recommendationId]?.status || r.status;
+    return status === "executed" || status === "rejected";
+  });
+  const displayedRecs = activeTab === "active" ? activeRecs : resolvedRecs;
 
   const handleAction = async (recommendationId: string, approve: boolean, token?: string) => {
     setActionStates((prev) => ({
@@ -255,7 +262,43 @@ export default function RecommendationWidget() {
         </div>
       </div>
 
-      {recommendations.length === 0 ? (
+      {/* Tabs Selector */}
+      <div style={{ display: "flex", gap: 8, marginBottom: 20 }}>
+        <button
+          onClick={() => setActiveTab("active")}
+          style={{
+            background: activeTab === "active" ? "#ffffff" : "transparent",
+            color: activeTab === "active" ? "#111111" : "#888888",
+            border: `1px solid ${activeTab === "active" ? "#ffffff" : border}`,
+            padding: "8px 18px",
+            borderRadius: 20,
+            fontSize: 12,
+            fontWeight: 600,
+            cursor: "pointer",
+            transition: "all 0.2s ease",
+          }}
+        >
+          Active ({activeRecs.length})
+        </button>
+        <button
+          onClick={() => setActiveTab("resolved")}
+          style={{
+            background: activeTab === "resolved" ? "#ffffff" : "transparent",
+            color: activeTab === "resolved" ? "#111111" : "#888888",
+            border: `1px solid ${activeTab === "resolved" ? "#ffffff" : border}`,
+            padding: "8px 18px",
+            borderRadius: 20,
+            fontSize: 12,
+            fontWeight: 600,
+            cursor: "pointer",
+            transition: "all 0.2s ease",
+          }}
+        >
+          Resolved ({resolvedRecs.length})
+        </button>
+      </div>
+
+      {displayedRecs.length === 0 ? (
         <div
           style={{
             background: cardBg,
@@ -274,27 +317,30 @@ export default function RecommendationWidget() {
               width: 64,
               height: 64,
               borderRadius: "50%",
-              background: "linear-gradient(135deg, #052e16 0%, #14532d 100%)",
-              border: "2px solid #16a34a",
+              background: activeTab === "active" ? "linear-gradient(135deg, #052e16 0%, #14532d 100%)" : "linear-gradient(135deg, #1c1c1c 0%, #2a2a2a 100%)",
+              border: activeTab === "active" ? "2px solid #16a34a" : `2px solid ${border}`,
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
               fontSize: 28,
-              boxShadow: "0 0 24px rgba(22,163,74,0.25)",
+              boxShadow: activeTab === "active" ? "0 0 24px rgba(22,163,74,0.25)" : "none",
             }}
           >
-            ✓
+            {activeTab === "active" ? "✓" : "∅"}
           </div>
-          <div style={{ color: "#4ade80", fontWeight: 700, fontSize: 16 }}>
-            All Actions Resolved
+          <div style={{ color: activeTab === "active" ? "#4ade80" : "#ffffff", fontWeight: 700, fontSize: 16 }}>
+            {activeTab === "active" ? "All Actions Resolved" : "No Resolved Actions"}
           </div>
           <div style={{ color: muted, fontSize: 12, maxWidth: 280, lineHeight: 1.6 }}>
-            No pending recommendations require your approval. The system is fully operational.
+            {activeTab === "active" 
+              ? "No pending recommendations require your approval. The system is fully operational."
+              : "No historical or completed recommendations found in this session."
+            }
           </div>
         </div>
       ) : (
         <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-          {recommendations.map((r) => {
+          {displayedRecs.map((r) => {
             const state = actionStates[r.recommendationId] || {};
             const currentStatus = state.status || r.status;
             const isPending = currentStatus === "pending";
