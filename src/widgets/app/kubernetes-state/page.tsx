@@ -246,7 +246,7 @@ export default function KubernetesStateWidget() {
                     <span style={{ fontSize: 13, fontWeight: 700 }}>{p.podName}</span>
                   </div>
                   <span style={{ fontSize: 11, color: MUTED }}>
-                    Age: {new Date(p.createdAt).toLocaleDateString()}
+                    {new Date(p.createdAt).toLocaleString()}
                   </span>
                 </div>
 

@@ -6,13 +6,13 @@ import { useWidgetSDK } from "@nitrostack/widgets";
 export const dynamic = "force-dynamic";
 
 interface PagerDutyIncident {
-  incident_id: string;
+  id: string;
   title: string;
   status: "triggered" | "acknowledged" | "resolved";
   urgency: "high" | "low";
   created_at: string;
   service: string;
-  assigned_team: string;
+  assigned_to: string;
   escalation_policy: string;
 }
 
@@ -87,8 +87,8 @@ export default function PagerDutyIncidentsWidget() {
       searchQuery === "" ||
       i.title.toLowerCase().includes(query) ||
       i.service.toLowerCase().includes(query) ||
-      i.assigned_team.toLowerCase().includes(query) ||
-      i.incident_id.toLowerCase().includes(query);
+      i.assigned_to.toLowerCase().includes(query) ||
+      i.id.toLowerCase().includes(query);
 
     const matchesUrgency = filterUrgency === "all" || i.urgency === filterUrgency;
 
@@ -211,7 +211,7 @@ export default function PagerDutyIncidentsWidget() {
 
             return (
               <div
-                key={i.incident_id}
+                key={i.id}
                 style={{
                   background: CARD,
                   border: `1px solid ${BORDER}`,
@@ -260,7 +260,7 @@ export default function PagerDutyIncidentsWidget() {
                       {i.urgency} Urgency
                     </span>
                     <span style={{ fontSize: 12, color: MUTED, fontWeight: 500 }}>
-                      ID: {i.incident_id}
+                      ID: {i.id}
                     </span>
                   </div>
                   <span style={{ fontSize: 11, color: MUTED }}>
@@ -290,8 +290,8 @@ export default function PagerDutyIncidentsWidget() {
                     <span style={{ fontWeight: 500 }}>{i.service}</span>
                   </div>
                   <div>
-                    <span style={{ color: MUTED }}>Assigned Team:</span>{" "}
-                    <span style={{ fontWeight: 500 }}>{i.assigned_team}</span>
+                    <span style={{ color: MUTED }}>Assigned To:</span>{" "}
+                    <span style={{ fontWeight: 500 }}>{i.assigned_to}</span>
                   </div>
                   <div style={{ gridColumn: "span 2" }}>
                     <span style={{ color: MUTED }}>Escalation Policy:</span>{" "}
