@@ -2,9 +2,7 @@
 
 > Most "AI operations" dashboards just show you graphs. Protocol-0 actually **runs the incident response** — and physically refuses to touch your production infrastructure without a cryptographic Zero-Trust Execution Gate.
 
-![Model Context Protocol](https://img.shields.io/badge/Model%20Context%20Protocol-MCP-blue) ![Built with Nitrostack](https://img.shields.io/badge/Built%20with-Nitrostack-0A66FF) ![Status](https://img.shields.io/badge/status-live-brightgreen) ![Track](https://img.shields.io/badge/track-Enterprise%20AI%20%26%20Workplace%20Automation-F5A623)
-
-**Protocol-0** is an [MCP (Model Context Protocol)](https://nitrostack.ai) server that gives AI assistants — Claude, Cursor, ChatGPT, NitroChat, or any MCP-compatible client — real authority to act as your **Site Reliability Engineer (SRE)**. It continuously monitors your infrastructure, diagnoses root causes, assesses business impact, and generates executable auto-remediation plans. Built and deployed on [Nitrostack](https://nitrostack.ai) by **Team TheBlacklisted**, Amrita Vishwa Vidyapeetham Coimbatore.
+**Protocol-0** is an [MCP (Model Context Protocol)](https://nitrostack.ai) server that gives AI assistants - Claude, Cursor, ChatGPT, NitroChat, or any MCP-compatible client — real authority to act as your **Site Reliability Engineer (SRE)**. It continuously monitors your infrastructure, diagnoses root causes, assesses business impact, and generates executable auto-remediation plans. Built and deployed on [Nitrostack](https://nitrostack.ai) by **Team TheBlacklisted**, Amrita Vishwa Vidyapeetham Coimbatore.
 
 ## Table of Contents
 
