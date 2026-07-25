@@ -21,10 +21,23 @@ async function main() {
   const jiraData = JSON.parse(fs.readFileSync(jiraMockPath, "utf-8"));
   console.log(`Loaded ${jiraData.length} Jira tickets.`);
 
-  console.log("✅ State successfully seeded.");
+  const pdMockPath = path.resolve(process.cwd(), "mocks/pagerduty_seed.json");
+  const pdData = JSON.parse(fs.readFileSync(pdMockPath, "utf-8"));
+  console.log(`Loaded ${pdData.length} PagerDuty incidents.`);
+
+  const k8sMockPath = path.resolve(process.cwd(), "mocks/kubernetes_seed.json");
+  const k8sData = JSON.parse(fs.readFileSync(k8sMockPath, "utf-8"));
+  console.log(`Loaded ${k8sData.length} Kubernetes pods state.`);
+
+  const secMockPath = path.resolve(process.cwd(), "mocks/security_audit_seed.json");
+  const secData = JSON.parse(fs.readFileSync(secMockPath, "utf-8"));
+  console.log(`Loaded ${secData.length} Security Audit events.`);
+
+  console.log("State successfully seeded.");
 }
 
 main().catch(e => {
   console.error(e);
   process.exit(1);
 });
+

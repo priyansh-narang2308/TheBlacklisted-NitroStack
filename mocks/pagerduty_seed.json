@@ -1,22 +1,20 @@
 [
   {
-    "incident_key": "PD-INC-9901",
-    "urgency": "HIGH",
-    "service_name": "Core-API-Ingress-EU",
+    "id": "PD-5091",
+    "service": "api-gateway",
     "status": "triggered",
-    "summary": "P99 Latency > 2.5s and 503 HTTP responses on eu-west-1 cluster",
-    "on_call_engineer": "jane.doe@enterprise.com",
-    "escalation_policy": "SRE Primary Tier 1",
-    "created_at": "2026-07-24T12:01:30Z"
+    "urgency": "high",
+    "title": "API Gateway 5xx Error Spike",
+    "assigned_to": "sre-oncall@company.com",
+    "created_at": "2026-07-25T14:30:00Z"
   },
   {
-    "incident_key": "PD-INC-9902",
-    "urgency": "HIGH",
-    "service_name": "Zero-Trust Security Auditor",
+    "id": "PD-5092",
+    "service": "auth-service",
     "status": "acknowledged",
-    "summary": "Zero-Trust HMAC Verification Failure: Unauthorized payload execution blocked",
-    "on_call_engineer": "sec-ops-lead@enterprise.com",
-    "escalation_policy": "DevSecOps Incident Command",
-    "created_at": "2026-07-24T12:14:22Z"
+    "urgency": "high",
+    "title": "Database connection timeout (auth-db)",
+    "assigned_to": "db-admin@company.com",
+    "created_at": "2026-07-25T14:45:00Z"
   }
 ]

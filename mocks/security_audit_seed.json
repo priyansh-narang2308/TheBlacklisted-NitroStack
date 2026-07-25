@@ -1,20 +1,22 @@
 [
   {
-    "audit_id": "AUD-ZERO-8801",
-    "timestamp": "2026-07-24T12:00:15Z",
-    "agent_name": "ActionAgent",
-    "action": "EVALUATE_ZERO_TRUST_PAYLOAD",
-    "status": "GATE_PASSED",
-    "hmac_algorithm": "HMAC-SHA256",
-    "details": "Payload cryptographic signature valid. Execution granted for pod scaling."
+    "event_id": "SEC-AUDIT-991",
+    "event_type": "IAMRoleModification",
+    "actor": "admin@company.com",
+    "resource": "arn:aws:iam::123456789:role/db-admin",
+    "action": "AttachRolePolicy",
+    "status": "SUCCESS",
+    "timestamp": "2026-07-25T13:00:00Z",
+    "risk_level": "medium"
   },
   {
-    "audit_id": "AUD-ZERO-8802",
-    "timestamp": "2026-07-24T12:14:20Z",
-    "agent_name": "ActionAgent",
-    "action": "EXECUTE_INFRASTRUCTURE_MUTATION",
-    "status": "GATE_BLOCKED",
-    "hmac_algorithm": "HMAC-SHA256",
-    "details": "BLOCKED: Provided HMAC signature does not match server expected key. Unsigned mutation prevented."
+    "event_id": "SEC-AUDIT-992",
+    "event_type": "UnauthenticatedAccessAttempt",
+    "actor": "unknown_ip_8.8.8.8",
+    "resource": "k8s-api-server",
+    "action": "ListSecrets",
+    "status": "DENIED",
+    "timestamp": "2026-07-25T14:55:00Z",
+    "risk_level": "high"
   }
 ]
