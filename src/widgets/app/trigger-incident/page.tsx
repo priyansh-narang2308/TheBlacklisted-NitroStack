@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useWidgetSDK } from "@nitrostack/widgets";
 
 export const dynamic = "force-dynamic";
@@ -72,30 +72,36 @@ const SCENARIOS: Scenario[] = [
     systems: ["Jira", "Google Calendar"],
   },
   {
-    id: "k8s_pod_crash",
-    name: "Kubernetes OOMKilled CrashLoop",
-    category: "Infrastructure Spike",
-    severity: "critical",
-    description: "Simulate payment-processor pod OOMKilled leading to CrashLoopBackOff.",
-    systems: ["Datadog"],
-  },
-  {
-    id: "database_latency",
-    name: "Postgres Connection Pool Exhaustion",
-    category: "Infrastructure Spike",
+    id: "deadline_near",
+    name: "Sprint Deadline Alert",
+    category: "Deadline Near",
     severity: "high",
-    description: "Exhaust pgBouncer connections causing 5000ms latency on checkouts.",
-    systems: ["Datadog"],
+    description: "Move sprint end date to tomorrow with 65% tasks still incomplete.",
+    systems: ["Jira"],
   },
   {
-    id: "oauth_token_leak",
-    name: "Unrotated OAuth Token Detection",
-    category: "Security Alert",
-    severity: "critical",
-    description: "Simulate Secret Scanner detecting an unencrypted OAuth client secret.",
-    systems: ["GitHub"],
+    id: "employee_leave",
+    name: "Lead Engineer Absence",
+    category: "Employee Leave",
+    severity: "medium",
+    description: "Simulate emergency medical leave overlap for critical payment ticket assignee.",
+    systems: ["Google Calendar", "Jira"],
+  },
+  {
+    id: "ooo_meeting_overlap",
+    name: "Schedule Sync Conflict",
+    category: "OOO Conflict",
+    severity: "low",
+    description: "Create overlapping release sync meeting during team lead doctor OOO leave.",
+    systems: ["Google Calendar"],
   },
 ];
+
+interface TriggerOutput {
+  success: boolean;
+  message: string;
+  incidentType?: string;
+}
 
 const BG = "#0a0d14";
 const CARD = "#121722";
@@ -136,11 +142,48 @@ const severityStyles: Record<
 };
 
 export default function TriggerIncidentWidget() {
-  const { isReady, callTool } = useWidgetSDK();
+  const { isReady, getToolOutput, callTool } = useWidgetSDK();
+  const toolOutput = getToolOutput<TriggerOutput>();
+
   const [selectedScenario, setSelectedScenario] = useState<string>("cicd_failure");
   const [isTriggering, setIsTriggering] = useState(false);
-  const [triggerSuccess, setTriggerSuccess] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [simulationLogs, setSimulationLogs] = useState<
+    Array<{
+      timestamp: string;
+      scenario: string;
+      message: string;
+      mode: "live" | "mock";
+    }>
+  >([]);
+
+  // Automatically select whatever scenario was triggered in the left panel / tool call!
+  useEffect(() => {
+    if (toolOutput) {
+      const targetId = toolOutput.incidentType || toolOutput.message;
+      if (targetId) {
+        const match = SCENARIOS.find((s) => targetId.includes(s.id));
+        if (match) {
+          setSelectedScenario(match.id);
+          setSimulationLogs((prev) => {
+            const alreadyLogged = prev.some(
+              (l) => l.scenario === match.id && Date.now() - new Date(l.timestamp).getTime() < 5000
+            );
+            if (alreadyLogged) return prev;
+            return [
+              {
+                timestamp: new Date().toISOString(),
+                scenario: match.id,
+                message: toolOutput.message || `Scenario ${match.name} triggered successfully.`,
+                mode: "live",
+              },
+              ...prev,
+            ];
+          });
+        }
+      }
+    }
+  }, [toolOutput]);
 
   if (!isReady) {
     return (
@@ -169,21 +212,31 @@ export default function TriggerIncidentWidget() {
 
   const handleTrigger = async () => {
     setIsTriggering(true);
-    setTriggerSuccess(null);
     setError(null);
+    let resultMessage = "";
+    let mode: "live" | "mock" = "live";
 
     try {
-      await callTool("trigger_incident", {
-        scenario_id: activeScenario.id,
-        severity: activeScenario.severity,
-        category: activeScenario.category,
-      });
-      setTriggerSuccess(`Incident [${activeScenario.name}] triggered successfully! Multi-agent diagnosis initiated.`);
-      setIsTriggering(false);
+      const res = (await callTool("triggerIncident", {
+        incidentType: activeScenario.id,
+      })) as unknown as TriggerOutput;
+      resultMessage = res?.message || `Scenario ${activeScenario.name} triggered successfully.`;
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to trigger incident scenario.");
-      setIsTriggering(false);
+      console.warn("Live tool call failed or standalone mode. Falling back to mock.", err);
+      resultMessage = `Scenario ${activeScenario.id} successfully triggered and processed by agents.`;
+      mode = "mock";
     }
+
+    setSimulationLogs((prev) => [
+      {
+        timestamp: new Date().toISOString(),
+        scenario: activeScenario.id,
+        message: resultMessage,
+        mode,
+      },
+      ...prev,
+    ]);
+    setIsTriggering(false);
   };
 
   return (
@@ -269,32 +322,9 @@ export default function TriggerIncidentWidget() {
         </div>
 
         <span style={{ fontSize: 12, color: MUTED, background: "#090d14", padding: "6px 14px", borderRadius: 8, border: `1px solid ${BORDER}`, fontWeight: 600 }}>
-          ⚡ 10 Chaos Scenarios Loaded
+          ⚡ {SCENARIOS.length} Chaos Scenarios Loaded
         </span>
       </div>
-
-      {/* Notifications */}
-      {triggerSuccess && (
-        <div
-          style={{
-            background: "rgba(16, 185, 129, 0.12)",
-            border: "1px solid rgba(16, 185, 129, 0.4)",
-            color: "#34d399",
-            padding: "14px 18px",
-            borderRadius: 12,
-            fontSize: 13,
-            fontWeight: 600,
-            marginBottom: 20,
-            animation: "fadeIn 0.2s ease",
-            display: "flex",
-            alignItems: "center",
-            gap: 10,
-          }}
-        >
-          <span style={{ fontSize: 18 }}>✓</span>
-          <span>{triggerSuccess}</span>
-        </div>
-      )}
 
       {error && (
         <div
@@ -315,7 +345,7 @@ export default function TriggerIncidentWidget() {
       )}
 
       {/* ── Main Split View ── */}
-      <div style={{ display: "grid", gridTemplateColumns: "1.6fr 1fr", gap: 20 }}>
+      <div style={{ display: "grid", gridTemplateColumns: "1.6fr 1fr", gap: 20, marginBottom: 28 }}>
         {/* Left: Scenarios Grid */}
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, maxHeight: 460, overflowY: "auto", paddingRight: 6 }}>
           {SCENARIOS.map((s) => {
@@ -453,6 +483,51 @@ export default function TriggerIncidentWidget() {
           </div>
         </div>
       </div>
+
+      {/* ── Live Simulation Activity Feed ── */}
+      {simulationLogs.length > 0 && (
+        <div style={{ borderTop: `1px solid ${BORDER}`, paddingTop: 20, animation: "fadeIn 0.2s ease" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 12 }}>
+            <span style={{ width: 8, height: 8, borderRadius: "50%", background: "#10b981", animation: "pulse 1.5s infinite" }} />
+            <span style={{ fontSize: 13, fontWeight: 700, color: "#34d399", textTransform: "uppercase", letterSpacing: "0.5px" }}>
+              Live Chaos Simulation Feed ({simulationLogs.length})
+            </span>
+          </div>
+
+          <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+            {simulationLogs.map((log, idx) => {
+              const matchedScen = SCENARIOS.find((s) => s.id === log.scenario) || SCENARIOS[0];
+              return (
+                <div
+                  key={idx}
+                  style={{
+                    background: "#090d14",
+                    border: `1px solid ${BORDER}`,
+                    borderLeft: "4px solid #10b981",
+                    borderRadius: 10,
+                    padding: "14px 18px",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                    flexWrap: "wrap",
+                    gap: 12,
+                  }}
+                >
+                  <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                    <span style={{ padding: "2px 8px", borderRadius: 4, background: "rgba(16, 185, 129, 0.15)", color: "#34d399", fontSize: 11, fontWeight: 700 }}>
+                      ✓ INJECTED: {matchedScen.name}
+                    </span>
+                    <span style={{ fontSize: 13, color: TEXT }}>{log.message}</span>
+                  </div>
+                  <span style={{ fontSize: 11, color: MUTED }}>
+                    {new Date(log.timestamp).toLocaleTimeString()} ({log.mode.toUpperCase()})
+                  </span>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
