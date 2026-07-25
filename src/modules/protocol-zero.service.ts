@@ -39,6 +39,15 @@ export class ProtocolZeroService
   private enterpriseState: EnterpriseState = { ...initialEnterpriseState };
   private notificationLogs: NotificationLog[] = [];
 
+  // Per-incident score degradation: incidentId -> { deployScore, cicdScore, infraScore, issueScore, sprintScore }
+  private scenarioDegradations: Map<string, {
+    deployScore?: number;
+    cicdScore?: number;
+    infraScore?: number;
+    issueScore?: number;
+    sprintScore?: number;
+  }> = new Map();
+
   private pollInterval: NodeJS.Timeout | null = null;
   private incidentIdCounter = 1000; // Start clean at INC-1001
 
@@ -870,6 +879,18 @@ export class ProtocolZeroService
   ) {
     const id = `INC-${++this.incidentIdCounter}`;
 
+    // Record degradation penalty for this incident so getEngineeringHealth reflects real impact
+    const degradation: { deployScore?: number; cicdScore?: number; infraScore?: number; issueScore?: number; sprintScore?: number } = {};
+    if (category === "CI/CD Failure")       { degradation.cicdScore = 70; }
+    if (category === "Merge Failure")       { degradation.cicdScore = 30; }
+    if (category === "Deployment Failure")  { degradation.deployScore = 80; degradation.infraScore = 60; }
+    if (category === "Issue Spike")         { degradation.issueScore = 60; }
+    if (category === "Infrastructure Spike") { degradation.infraScore = 75; }
+    if (category === "Sprint Risk" || category === "Deadline Near") { degradation.sprintScore = 55; }
+    if (category === "Feature Incomplete")  { degradation.sprintScore = 40; }
+    if (category === "Employee Leave" || category === "OOO Conflict") { degradation.sprintScore = 30; }
+    this.scenarioDegradations.set(id, degradation);
+
     const newIncident: Incident = {
       incidentId: id,
       title,
@@ -1575,22 +1596,38 @@ Provide your executive report:`;
       dd.httpCheckFailures === 0 ? 100 : dd.httpCheckFailures === 1 ? 50 : 0;
     const infraScore = Math.round((cpuScore + ramScore + httpScore) / 3);
 
+    // Apply degradation penalties from all active (unresolved) incidents
+    let penaltyDeploy = 0, penaltyCicd = 0, penaltyInfra = 0, penaltyIssue = 0, penaltySprint = 0;
+    for (const [, deg] of this.scenarioDegradations) {
+      penaltyDeploy  = Math.max(penaltyDeploy,  deg.deployScore  ?? 0);
+      penaltyCicd    = Math.max(penaltyCicd,    deg.cicdScore    ?? 0);
+      penaltyInfra   = Math.max(penaltyInfra,   deg.infraScore   ?? 0);
+      penaltyIssue   = Math.max(penaltyIssue,   deg.issueScore   ?? 0);
+      penaltySprint  = Math.max(penaltySprint,  deg.sprintScore  ?? 0);
+    }
+
+    const effectiveDeploy  = Math.max(0, deployScore  - penaltyDeploy);
+    const effectiveCicd    = Math.max(0, cicdScore    - penaltyCicd);
+    const effectiveInfra   = Math.max(0, infraScore   - penaltyInfra);
+    const effectiveIssue   = Math.max(0, issueScore   - penaltyIssue);
+    const effectiveSprint  = Math.max(0, sprintScore  - penaltySprint);
+
     const finalScore = Math.round(
-      deployScore * 0.25 +
-        cicdScore * 0.2 +
-        sprintScore * 0.2 +
-        issueScore * 0.15 +
-        infraScore * 0.2,
+      effectiveDeploy  * 0.25 +
+      effectiveCicd    * 0.2  +
+      effectiveSprint  * 0.2  +
+      effectiveIssue   * 0.15 +
+      effectiveInfra   * 0.2,
     );
 
     return {
       engineeringHealthScore: finalScore,
       breakdown: {
-        deploymentSuccess: Math.round(deployScore),
-        cicdSuccess: Math.round(cicdScore),
-        sprintHealth: Math.round(sprintScore),
-        issueRate: Math.round(issueScore),
-        infrastructureHealth: Math.round(infraScore),
+        deploymentSuccess: Math.round(effectiveDeploy),
+        cicdSuccess:       Math.round(effectiveCicd),
+        sprintHealth:      Math.round(effectiveSprint),
+        issueRate:         Math.round(effectiveIssue),
+        infrastructureHealth: Math.round(effectiveInfra),
       },
     };
   }
@@ -1752,6 +1789,8 @@ Provide your executive report:`;
     if (!remainingPending) {
       console.log(`[Protocol-0 approveAction] Resolving incident ${targetInc.incidentId} and pushing notifications...`);
       targetInc.status = "resolved";
+      // Clear the degradation so engineering health recovers
+      this.scenarioDegradations.delete(targetInc.incidentId);
       this.logAgentAction(
         "Monitoring Agent",
         `Incident ${targetInc.incidentId} was fully resolved`,
