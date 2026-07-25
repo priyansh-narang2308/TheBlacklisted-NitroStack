@@ -51,8 +51,10 @@ export class MonitoringTools {
     description: "Fetches recent security audit logs, including IAM role modifications, Zero-Trust Gate executions, and unauthorized access attempts.",
     inputSchema: z.object({}),
   })
+  @Widget("security-audit-logs")
   async getSecurityAuditLogs(_input: Record<string, never>, ctx: ExecutionContext) {
     ctx.logger.info("Monitoring Agent fetching Security Audit logs...");
-    return this.twin.getSecurityAuditLogs();
+    const logs = await this.twin.getSecurityAuditLogs();
+    return { logs };
   }
 }
