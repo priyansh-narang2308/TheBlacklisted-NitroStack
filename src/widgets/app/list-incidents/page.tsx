@@ -40,6 +40,7 @@ export default function ListIncidentsWidget() {
   const [filterSeverity, setFilterSeverity] = useState<string>("all");
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [selectedInc, setSelectedInc] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState<"active" | "resolved">("active");
 
   const isDark = theme === "dark";
   const bg = "#111111";
@@ -139,7 +140,11 @@ export default function ListIncidentsWidget() {
   const isMock = !toolOutput;
   const incidents = toolOutput?.incidents ?? MOCK_INCIDENTS;
 
-  const filteredIncidents = incidents.filter((inc) => {
+  const activeIncidents = incidents.filter((inc) => inc.status !== "resolved");
+  const resolvedIncidents = incidents.filter((inc) => inc.status === "resolved");
+  const targetIncidents = activeTab === "active" ? activeIncidents : resolvedIncidents;
+
+  const displayedIncidents = targetIncidents.filter((inc) => {
     const matchesSeverity =
       filterSeverity === "all" || inc.severity === filterSeverity;
     const matchesSearch =
@@ -257,6 +262,42 @@ export default function ListIncidentsWidget() {
         />
       </div>
 
+      {/* Tabs Selector */}
+      <div style={{ display: "flex", gap: 8, marginBottom: 20 }}>
+        <button
+          onClick={() => setActiveTab("active")}
+          style={{
+            background: activeTab === "active" ? "#ffffff" : "transparent",
+            color: activeTab === "active" ? "#111111" : "#888888",
+            border: `1px solid ${activeTab === "active" ? "#ffffff" : border}`,
+            padding: "8px 18px",
+            borderRadius: 20,
+            fontSize: 12,
+            fontWeight: 600,
+            cursor: "pointer",
+            transition: "all 0.2s ease",
+          }}
+        >
+          Active ({activeIncidents.length})
+        </button>
+        <button
+          onClick={() => setActiveTab("resolved")}
+          style={{
+            background: activeTab === "resolved" ? "#ffffff" : "transparent",
+            color: activeTab === "resolved" ? "#111111" : "#888888",
+            border: `1px solid ${activeTab === "resolved" ? "#ffffff" : border}`,
+            padding: "8px 18px",
+            borderRadius: 20,
+            fontSize: 12,
+            fontWeight: 600,
+            cursor: "pointer",
+            transition: "all 0.2s ease",
+          }}
+        >
+          Resolved ({resolvedIncidents.length})
+        </button>
+      </div>
+
       {/* Incidents List */}
       <div
         style={{
@@ -268,7 +309,7 @@ export default function ListIncidentsWidget() {
           paddingRight: 4,
         }}
       >
-        {filteredIncidents.length === 0 ? (
+        {displayedIncidents.length === 0 ? (
           <div
             style={{
               background: cardBg,
@@ -326,7 +367,7 @@ export default function ListIncidentsWidget() {
             )}
           </div>
         ) : (
-          filteredIncidents.map((inc) => {
+          displayedIncidents.map((inc) => {
             const isSelected = selectedInc === inc.incidentId;
             return (
               <div
