@@ -13,6 +13,9 @@ interface PodState {
   memoryUsage: string;
   restarts: number;
   createdAt: string;
+  reason?: string;
+  message?: string;
+  failedAt?: string;
 }
 
 interface KubernetesData {
@@ -285,6 +288,35 @@ export default function KubernetesStateWidget() {
                     </div>
                   </div>
                 </div>
+
+                {p.status !== "Running" && (p.reason || p.message) && (
+                  <div
+                    style={{
+                      marginTop: 12,
+                      padding: 12,
+                      background: "rgba(239, 68, 68, 0.07)",
+                      border: "1px solid rgba(239, 68, 68, 0.2)",
+                      borderRadius: 8,
+                      fontSize: 12,
+                    }}
+                  >
+                    {p.reason && (
+                      <div style={{ fontWeight: 700, color: "#f87171", marginBottom: 4 }}>
+                        Failure Reason: {p.reason}
+                      </div>
+                    )}
+                    {p.message && (
+                      <div style={{ color: "#fca5a5", fontFamily: "monospace", fontSize: 11, wordBreak: "break-all", lineHeight: 1.4 }}>
+                        {p.message}
+                      </div>
+                    )}
+                    {p.failedAt && (
+                      <div style={{ fontSize: 9, color: MUTED, marginTop: 6, textAlign: "right" }}>
+                        Failed At: {new Date(p.failedAt).toLocaleString()}
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
             );
           })

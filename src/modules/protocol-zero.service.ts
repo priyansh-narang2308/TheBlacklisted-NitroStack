@@ -39,6 +39,54 @@ export class ProtocolZeroService
   private enterpriseState: EnterpriseState = { ...initialEnterpriseState };
   private notificationLogs: NotificationLog[] = [];
 
+  private kubernetesPods: any[] = [
+    {
+      podName: "gateway-service-84d7cb-mh22a",
+      namespace: "production",
+      status: "Running",
+      cpuUsage: "120m",
+      memoryUsage: "180Mi",
+      restarts: 0,
+      createdAt: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(),
+    },
+    {
+      podName: "auth-service-7cfbc6b-9p8l2",
+      namespace: "production",
+      status: "Running",
+      cpuUsage: "85m",
+      memoryUsage: "256Mi",
+      restarts: 0,
+      createdAt: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(),
+    },
+    {
+      podName: "payment-service-5dc89d-4xzwq",
+      namespace: "production",
+      status: "Running",
+      cpuUsage: "95m",
+      memoryUsage: "210Mi",
+      restarts: 0,
+      createdAt: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(),
+    },
+    {
+      podName: "database-pod-0",
+      namespace: "production",
+      status: "Running",
+      cpuUsage: "310m",
+      memoryUsage: "1024Mi",
+      restarts: 0,
+      createdAt: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(),
+    },
+    {
+      podName: "datadog-agent-88w9q",
+      namespace: "monitoring",
+      status: "Running",
+      cpuUsage: "45m",
+      memoryUsage: "128Mi",
+      restarts: 0,
+      createdAt: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(),
+    }
+  ];
+
   // Per-incident score degradation: incidentId -> { deployScore, cicdScore, infraScore, issueScore, sprintScore }
   private scenarioDegradations: Map<string, {
     deployScore?: number;
@@ -824,6 +872,42 @@ export class ProtocolZeroService
         throw new Error(`Scenario type '${type}' not recognized.`);
     }
 
+    // Mutate kubernetesPods based on triggered scenario for live telemetry in widgets
+    if (type === "deployment_failure") {
+      const p = this.kubernetesPods.find((pod) => pod.podName === "gateway-service-84d7cb-mh22a");
+      if (p) {
+        p.status = "CrashLoopBackOff";
+        p.restarts = 15;
+        p.cpuUsage = "12m";
+        p.memoryUsage = "480Mi";
+        p.reason = "Back-off restarting failed container";
+        p.message = "Liveness probe failed: HTTP GET /healthz failed with statuscode: 500";
+        p.failedAt = new Date().toISOString();
+      }
+    } else if (type === "infra_cpu_spike") {
+      const p = this.kubernetesPods.find((pod) => pod.podName === "auth-service-7cfbc6b-9p8l2");
+      if (p) {
+        p.status = "Running";
+        p.cpuUsage = "980m";
+        p.memoryUsage = "240Mi";
+        p.restarts = 0;
+        p.reason = "High CPU Load Threshold Exceeded";
+        p.message = "CPU utilization (99.4%) exceeds warning threshold of 85.0%";
+        p.failedAt = new Date().toISOString();
+      }
+    } else if (type === "cicd_failure") {
+      const p = this.kubernetesPods.find((pod) => pod.podName === "payment-service-5dc89d-4xzwq");
+      if (p) {
+        p.status = "Pending";
+        p.cpuUsage = "0m";
+        p.memoryUsage = "0Mi";
+        p.restarts = 0;
+        p.reason = "ContainerCreating";
+        p.message = "Failed to pull image 'payment-service:latest': ImagePullBackOff";
+        p.failedAt = new Date().toISOString();
+      }
+    }
+
     this.logAgentAction(
       "Monitoring Agent",
       `Triggered simulated scenario: ${type}`,
@@ -865,6 +949,51 @@ export class ProtocolZeroService
       success: true,
       message: `Scenario ${type} triggered and processed by agents.`,
     };
+  }
+
+  public simulateDisaster(targetNode: string) {
+    const node = targetNode.toLowerCase();
+    
+    this.logAgentAction(
+      "Monitoring Agent",
+      `Disaster simulation event received for: ${targetNode}`,
+      "Catastrophic state injection in progress.",
+    );
+
+    if (node.includes("database") || node.includes("auth-db") || node.includes("db-admin") || node.includes("db")) {
+      const p = this.kubernetesPods.find((pod) => pod.podName === "database-pod-0");
+      if (p) {
+        p.status = "Failed";
+        p.cpuUsage = "0m";
+        p.memoryUsage = "0Mi";
+        p.restarts = 5;
+        p.reason = "Evicted / HardwareFailure";
+        p.message = "Node lost connection to SAN database storage; filesystem read-only failover error.";
+        p.failedAt = new Date().toISOString();
+      }
+    } else if (node.includes("gateway") || node.includes("auth")) {
+      const p = this.kubernetesPods.find((pod) => pod.podName === "auth-service-7cfbc6b-9p8l2");
+      if (p) {
+        p.status = "Failed";
+        p.cpuUsage = "0m";
+        p.memoryUsage = "0Mi";
+        p.restarts = 8;
+        p.reason = "OOMKilled";
+        p.message = "Memory limit of 256Mi exceeded. Process terminated with exit code 137.";
+        p.failedAt = new Date().toISOString();
+      }
+    } else {
+      const p = this.kubernetesPods.find((pod) => pod.podName === "gateway-service-84d7cb-mh22a");
+      if (p) {
+        p.status = "Failed";
+        p.cpuUsage = "0m";
+        p.memoryUsage = "0Mi";
+        p.restarts = 10;
+        p.reason = "CrashLoopBackOff";
+        p.message = "Container failed: exit status 1. Liveness check failed consecutively.";
+        p.failedAt = new Date().toISOString();
+      }
+    }
   }
 
   // ---------------------------------------------------------------------------
@@ -1791,6 +1920,31 @@ Provide your executive report:`;
       targetInc.status = "resolved";
       // Clear the degradation so engineering health recovers
       this.scenarioDegradations.delete(targetInc.incidentId);
+
+      // Restore Kubernetes pods to healthy running states
+      this.kubernetesPods.forEach((p) => {
+        p.status = "Running";
+        p.restarts = 0;
+        p.reason = undefined;
+        p.message = undefined;
+        p.failedAt = undefined;
+        if (p.podName === "gateway-service-84d7cb-mh22a") {
+          p.cpuUsage = "120m";
+          p.memoryUsage = "180Mi";
+        } else if (p.podName === "auth-service-7cfbc6b-9p8l2") {
+          p.cpuUsage = "85m";
+          p.memoryUsage = "256Mi";
+        } else if (p.podName === "payment-service-5dc89d-4xzwq") {
+          p.cpuUsage = "95m";
+          p.memoryUsage = "210Mi";
+        } else if (p.podName === "database-pod-0") {
+          p.cpuUsage = "310m";
+          p.memoryUsage = "1024Mi";
+        } else if (p.podName === "datadog-agent-88w9q") {
+          p.cpuUsage = "45m";
+          p.memoryUsage = "128Mi";
+        }
+      });
       this.logAgentAction(
         "Monitoring Agent",
         `Incident ${targetInc.incidentId} was fully resolved`,
@@ -2147,11 +2301,7 @@ Provide your executive report:`;
   // Data Fetchers for Integrations
   // ---------------------------------------------------------------------------
   async getKubernetesState() {
-    const mockPath = path.resolve(process.cwd(), "mocks/kubernetes_seed.json");
-    if (!fs.existsSync(mockPath)) {
-      throw new Error("Kubernetes state not found. Cluster may be unreachable.");
-    }
-    return JSON.parse(await fs.promises.readFile(mockPath, "utf-8"));
+    return this.kubernetesPods;
   }
 
   async getPagerDutyIncidents() {
