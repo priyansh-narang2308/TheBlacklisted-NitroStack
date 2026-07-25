@@ -65,7 +65,13 @@ flowchart TB
 
 ## Live Demo
 
-Point your MCP client at the endpoint (once deployed to NitroCloud) and try it instantly. Ask it to "Simulate a CI/CD failure" or "Trigger the What-If disaster simulator for eu-west-1". Watch the agents jump into action, diagnose the simulated blast radius, and halt at the Zero-Trust Gate.
+**Live MCP Endpoint:** `https://protocol-0-6a65348-the-blacklisted-amrita-university-coimbatore.app.nitrocloud.ai/mcp`
+
+You can connect your MCP client (like Claude or Cursor) to the live endpoint above to try it instantly. Try asking:
+* *"Simulate a CI/CD failure"*
+* *"Trigger the What-If disaster simulator for eu-west-1"*
+
+Watch the agents jump into action, diagnose the simulated blast radius, and halt at the Zero-Trust Gate.
 
 ## Getting Started
 
@@ -105,15 +111,13 @@ npm run seed:demo
 npm run regress
 ```
 
-## Connect to an MCP Client
-
-Add this server to your MCP client configuration:
+Add this server to your MCP client configuration (e.g. `claude_desktop_config.json` or Cursor settings):
 
 ```json
 {
   "mcpServers": {
-    "protocol-0": {
-      "url": "https://protocol-0.app.nitrocloud.ai/mcp"
+    "protocol-0-SRE": {
+      "url": "https://protocol-0-6a65348-the-blacklisted-amrita-university-coimbatore.app.nitrocloud.ai/mcp"
     }
   }
 }
