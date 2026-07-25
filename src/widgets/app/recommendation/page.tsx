@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { useTheme, useWidgetSDK } from "@nitrostack/widgets";
+import { useWidgetSDK } from "@nitrostack/widgets";
 
 export const dynamic = "force-dynamic";
 
@@ -29,177 +29,132 @@ interface RecommendationsData {
   recommendations: Recommendation[];
 }
 
-const priorityColor: Record<string, string> = {
-  high: "#ef4444",
-  medium: "#f59e0b",
-  low: "#ffffff",
-};
-
 const MOCK_RECOMMENDATIONS: RecommendationsData = {
   recommendations: [],
 };
 
+const BG = "#0a0d14";
+const CARD = "#121722";
+const CARD_HOVER = "#181f2e";
+const BORDER = "#232d42";
+const TEXT = "#f8fafc";
+const MUTED = "#94a3b8";
+const FONT = '"Inter", -apple-system, BlinkMacSystemFont, sans-serif';
+
+const priorityStyles: Record<
+  string,
+  { text: string; bg: string; border: string; glow: string }
+> = {
+  high: {
+    text: "#f87171",
+    bg: "rgba(239, 68, 68, 0.12)",
+    border: "rgba(239, 68, 68, 0.35)",
+    glow: "0 0 20px rgba(239, 68, 68, 0.25)",
+  },
+  medium: {
+    text: "#fbbf24",
+    bg: "rgba(245, 158, 11, 0.12)",
+    border: "rgba(245, 158, 11, 0.35)",
+    glow: "0 0 20px rgba(245, 158, 11, 0.2)",
+  },
+  low: {
+    text: "#38bdf8",
+    bg: "rgba(56, 189, 248, 0.12)",
+    border: "rgba(56, 189, 248, 0.35)",
+    glow: "none",
+  },
+};
+
+const statusColors: Record<string, { text: string; bg: string; border: string }> = {
+  pending: { text: "#fbbf24", bg: "rgba(245, 158, 11, 0.1)", border: "rgba(245, 158, 11, 0.3)" },
+  approved: { text: "#38bdf8", bg: "rgba(56, 189, 248, 0.1)", border: "rgba(56, 189, 248, 0.3)" },
+  executing: { text: "#818cf8", bg: "rgba(129, 140, 248, 0.1)", border: "rgba(129, 140, 248, 0.3)" },
+  executed: { text: "#34d399", bg: "rgba(16, 185, 129, 0.1)", border: "rgba(16, 185, 129, 0.3)" },
+  rejected: { text: "#f87171", bg: "rgba(239, 68, 68, 0.1)", border: "rgba(239, 68, 68, 0.3)" },
+  failed: { text: "#ef4444", bg: "rgba(239, 68, 68, 0.15)", border: "rgba(239, 68, 68, 0.4)" },
+};
+
 export default function RecommendationWidget() {
-  const theme = useTheme();
   const { isReady, getToolOutput, callTool } = useWidgetSDK();
   const rawData = getToolOutput<RecommendationsData>();
 
-  // Local state to track execution and update UI immediately
   const [actionStates, setActionStates] = useState<
     Record<string, { loading: boolean; status?: string; error?: string }>
   >({});
   const [activeTab, setActiveTab] = useState<"active" | "resolved">("active");
 
-  const isDark = theme === "dark";
-  const bg = "#111111";
-  const cardBg = "#1c1c1c";
-  const text = "#ffffff";
-  const muted = "#888888";
-  const border = "#2a2a2a";
-  const shadow = "none";
-  const backdropFilter = "none";
-
-  const shellStyle: React.CSSProperties = {
-    padding: 32,
-    textAlign: "center",
-    color: text,
-    background: bg,
-    borderRadius: 8,
-    fontFamily: '"Inter", -apple-system, sans-serif',
-  };
-
-  if (!isReady)
+  if (!isReady) {
     return (
       <div
         style={{
-          ...shellStyle,
-          minHeight: 320,
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "center",
-          justifyContent: "center",
-          gap: 20,
+          padding: 48,
+          textAlign: "center",
+          color: TEXT,
+          background: BG,
+          borderRadius: 16,
+          fontFamily: FONT,
+          border: `1px solid ${BORDER}`,
         }}
       >
-        <div style={{ position: "relative", width: 72, height: 72 }}>
-          <div
-            style={{
-              position: "absolute",
-              inset: 0,
-              borderRadius: "50%",
-              border: "2px solid #4f46e5",
-              animation: "pulse-ring 1.8s ease-out infinite",
-            }}
-          />
-          <div
-            style={{
-              position: "absolute",
-              inset: 8,
-              borderRadius: "50%",
-              border: "2px solid #818cf8",
-              animation: "pulse-ring 1.8s ease-out infinite 0.4s",
-            }}
-          />
-          <div
-            style={{
-              position: "absolute",
-              inset: 20,
-              borderRadius: "50%",
-              background: "#4338ca",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              fontSize: 18,
-            }}
-          >
-            ⚡
-          </div>
-        </div>
-        <div style={{ color: "#a5b4fc", fontWeight: 600, fontSize: 15, letterSpacing: "0.02em" }}>
-          Decision Board
-        </div>
-        <div style={{ color: muted, fontSize: 12, display: "flex", alignItems: "center", gap: 8 }}>
-          <span
-            style={{
-              display: "inline-block",
-              width: 8,
-              height: 8,
-              borderRadius: "50%",
-              background: "#818cf8",
-              animation: "blink 1.2s ease-in-out infinite",
-            }}
-          />
-          Loading action recommendations...
-        </div>
+        <div className="spinner" style={{ marginBottom: 16, margin: "0 auto" }} />
+        <div style={{ fontSize: 15, color: MUTED }}>Connecting to Protocol-0 Operational Control...</div>
         <style>{`
-          @keyframes pulse-ring {
-            0% { transform: scale(0.8); opacity: 1; }
-            100% { transform: scale(1.6); opacity: 0; }
-          }
-          @keyframes blink {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.2; }
-          }
+          @keyframes spin { 100% { transform: rotate(360deg); } }
+          .spinner { width: 32px; height: 32px; border: 3px solid rgba(255,255,255,0.1); border-top-color: #38bdf8; border-radius: 50%; animation: spin 1s linear infinite; }
         `}</style>
       </div>
     );
+  }
 
-  const isMock = !rawData;
   const data = rawData || MOCK_RECOMMENDATIONS;
-  if (!data)
-    return (
-      <div
-        style={{
-          ...shellStyle,
-          minHeight: 320,
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-        }}
-      >
-        Loading recommendations...
-      </div>
-    );
+  const recommendations = data.recommendations || [];
 
-  const allRecs = Array.isArray(data) ? data : (data.recommendations ?? []);
-  const activeRecs = allRecs.filter(r => (actionStates[r.recommendationId]?.status || r.status) === "pending");
-  const resolvedRecs = allRecs.filter(r => {
-    const status = actionStates[r.recommendationId]?.status || r.status;
-    return status === "executed" || status === "rejected";
+  const activeRecs = recommendations.filter((r) => {
+    const state = actionStates[r.recommendationId] || {};
+    const currentStatus = state.status || r.status;
+    return currentStatus === "pending" || currentStatus === "executing" || currentStatus === "approved";
   });
+
+  const resolvedRecs = recommendations.filter((r) => {
+    const state = actionStates[r.recommendationId] || {};
+    const currentStatus = state.status || r.status;
+    return currentStatus === "executed" || currentStatus === "rejected" || currentStatus === "failed";
+  });
+
   const displayedRecs = activeTab === "active" ? activeRecs : resolvedRecs;
 
-  const handleAction = async (recommendationId: string, approve: boolean, token?: string) => {
+  const handleAction = async (rec: Recommendation, action: "execute" | "reject") => {
     setActionStates((prev) => ({
       ...prev,
-      [recommendationId]: { loading: true },
+      [rec.recommendationId]: { loading: true, status: action === "execute" ? "executing" : "rejected" },
     }));
 
-    try {
-      if (isMock) {
-        await new Promise((resolve) => setTimeout(resolve, 800));
-      } else {
-        const toolName = approve
-          ? "approveRecommendation"
-          : "rejectRecommendation";
-        await callTool(toolName, { recommendationId, zero_trust_token: token });
-      }
+    if (action === "reject") {
+      setTimeout(() => {
+        setActionStates((prev) => ({
+          ...prev,
+          [rec.recommendationId]: { loading: false, status: "rejected" },
+        }));
+      }, 500);
+      return;
+    }
 
+    try {
+      await callTool("execute_remediation", {
+        recommendationId: rec.recommendationId,
+        approved: true,
+        zero_trust_token: rec.zero_trust_token || "default-token",
+      });
       setActionStates((prev) => ({
         ...prev,
-        [recommendationId]: {
-          loading: false,
-          status: approve ? "executed" : "rejected",
-        },
+        [rec.recommendationId]: { loading: false, status: "executed" },
       }));
     } catch (err) {
-      console.error(err);
       setActionStates((prev) => ({
         ...prev,
-        [recommendationId]: {
+        [rec.recommendationId]: {
           loading: false,
-          error:
-            err instanceof Error ? err.message : "Action execution failed.",
+          error: err instanceof Error ? err.message : "Action execution failed.",
         },
       }));
     }
@@ -208,330 +163,333 @@ export default function RecommendationWidget() {
   return (
     <div
       style={{
-        background: bg,
-        color: text,
-        padding: 24,
-        borderRadius: 8,
-        fontFamily: '"Inter", -apple-system, sans-serif',
-        border: `1px solid ${border}`,
-        boxShadow: "none",
+        background: BG,
+        color: TEXT,
+        padding: 28,
+        borderRadius: 16,
+        fontFamily: FONT,
+        border: `1px solid ${BORDER}`,
+        boxShadow: "0 20px 50px rgba(0,0,0,0.5)",
+        position: "relative",
       }}
     >
-      <div style={{ marginBottom: 20 }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-          <div
-            style={{
-              fontSize: 11,
-              letterSpacing: "0.5px",
-              color: "#ffffff",
-              fontWeight: 500,
-              textTransform: "uppercase",
-            }}
-          >
-            Operational Control
-          </div>
-          {isMock && (
+      <style>{`
+        @keyframes pulse {
+          0%, 100% { opacity: 1; transform: scale(1); }
+          50% { opacity: 0.4; transform: scale(0.92); }
+        }
+        @keyframes fadeIn {
+          from { opacity: 0; transform: translateY(6px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+        .interactive-card {
+          transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .interactive-card:hover {
+          transform: translateY(-2px);
+          border-color: #38bdf8 !important;
+          box-shadow: 0 10px 25px -5px rgba(56, 189, 248, 0.15);
+        }
+        .tab-btn {
+          padding: 8px 16px;
+          border-radius: 8px;
+          font-size: 13px;
+          font-weight: 500;
+          cursor: pointer;
+          transition: all 0.2s ease;
+          border: 1px solid transparent;
+        }
+      `}</style>
+
+      {/* ── Header ── */}
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          marginBottom: 24,
+          paddingBottom: 20,
+          borderBottom: `1px solid ${BORDER}`,
+          flexWrap: "wrap",
+          gap: 16,
+        }}
+      >
+        <div>
+          <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
             <span
               style={{
-                fontSize: 9,
-                background: "#1c1c1c",
-                color: "#888888",
-                padding: "1px 5px",
-                borderRadius: 4,
-                  border: "1px solid #2a2a2a",
-                  fontWeight: 400,
+                display: "inline-flex",
+                alignItems: "center",
+                gap: 6,
+                padding: "2px 8px",
+                borderRadius: 999,
+                background: "rgba(56, 189, 248, 0.1)",
+                border: "1px solid rgba(56, 189, 248, 0.2)",
+                color: "#38bdf8",
+                fontSize: 10,
+                fontWeight: 600,
+                letterSpacing: "0.5px",
               }}
             >
-              MOCK
+              <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#38bdf8", animation: "pulse 1.5s infinite" }} />
+              LIVE TELEMETRY STREAM
             </span>
-          )}
-        </div>
-        <div
-          style={{
-            fontSize: 22,
-            fontWeight: 500,
-            marginTop: 4,
-            letterSpacing: "0",
-          }}
-        >
-          Action Recommendations
-        </div>
-        <div style={{ fontSize: 13, color: muted, marginTop: 4 }}>
-          Executive Agent proposals requiring explicit approval workflow
-          confirmation.
-        </div>
-      </div>
-
-      {/* Tabs Selector */}
-      <div style={{ display: "flex", gap: 8, marginBottom: 20 }}>
-        <button
-          onClick={() => setActiveTab("active")}
-          style={{
-            background: activeTab === "active" ? "#ffffff" : "transparent",
-            color: activeTab === "active" ? "#111111" : "#888888",
-            border: `1px solid ${activeTab === "active" ? "#ffffff" : border}`,
-            padding: "8px 18px",
-            borderRadius: 20,
-            fontSize: 12,
-            fontWeight: 600,
-            cursor: "pointer",
-            transition: "all 0.2s ease",
-          }}
-        >
-          Active ({activeRecs.length})
-        </button>
-        <button
-          onClick={() => setActiveTab("resolved")}
-          style={{
-            background: activeTab === "resolved" ? "#ffffff" : "transparent",
-            color: activeTab === "resolved" ? "#111111" : "#888888",
-            border: `1px solid ${activeTab === "resolved" ? "#ffffff" : border}`,
-            padding: "8px 18px",
-            borderRadius: 20,
-            fontSize: 12,
-            fontWeight: 600,
-            cursor: "pointer",
-            transition: "all 0.2s ease",
-          }}
-        >
-          Resolved ({resolvedRecs.length})
-        </button>
-      </div>
-
-      {displayedRecs.length === 0 ? (
-        <div
-          style={{
-            background: cardBg,
-            border: `1px solid ${border}`,
-            borderRadius: 8,
-            padding: "48px 24px",
-            textAlign: "center",
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "center",
-            gap: 14,
-          }}
-        >
+            <span style={{ fontSize: 11, color: MUTED }}>• Operational Control</span>
+          </div>
           <div
             style={{
-              width: 64,
-              height: 64,
-              borderRadius: "50%",
-              background: activeTab === "active" ? "linear-gradient(135deg, #052e16 0%, #14532d 100%)" : "linear-gradient(135deg, #1c1c1c 0%, #2a2a2a 100%)",
-              border: activeTab === "active" ? "2px solid #16a34a" : `2px solid ${border}`,
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              fontSize: 28,
-              boxShadow: activeTab === "active" ? "0 0 24px rgba(22,163,74,0.25)" : "none",
+              fontSize: 26,
+              fontWeight: 700,
+              letterSpacing: "-0.5px",
+              background: "linear-gradient(135deg, #fff 0%, #cbd5e1 100%)",
+              WebkitBackgroundClip: "text",
+              WebkitTextFillColor: "transparent",
             }}
           >
-            {activeTab === "active" ? "✓" : "∅"}
-          </div>
-          <div style={{ color: activeTab === "active" ? "#4ade80" : "#ffffff", fontWeight: 700, fontSize: 16 }}>
-            {activeTab === "active" ? "All Actions Resolved" : "No Resolved Actions"}
-          </div>
-          <div style={{ color: muted, fontSize: 12, maxWidth: 280, lineHeight: 1.6 }}>
-            {activeTab === "active" 
-              ? "No pending recommendations require your approval. The system is fully operational."
-              : "No historical or completed recommendations found in this session."
-            }
+            Action Recommendations
           </div>
         </div>
-      ) : (
-        <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-          {displayedRecs.map((r) => {
+
+        {/* Tabs Selector */}
+        <div style={{ display: "flex", background: "#090d14", padding: 4, borderRadius: 10, border: `1px solid ${BORDER}` }}>
+          <button
+            onClick={() => setActiveTab("active")}
+            className="tab-btn"
+            style={{
+              background: activeTab === "active" ? CARD : "transparent",
+              color: activeTab === "active" ? TEXT : MUTED,
+              borderColor: activeTab === "active" ? BORDER : "transparent",
+            }}
+          >
+            ⚠️ Pending Review ({activeRecs.length})
+          </button>
+          <button
+            onClick={() => setActiveTab("resolved")}
+            className="tab-btn"
+            style={{
+              background: activeTab === "resolved" ? CARD : "transparent",
+              color: activeTab === "resolved" ? TEXT : MUTED,
+              borderColor: activeTab === "resolved" ? BORDER : "transparent",
+            }}
+          >
+            ✓ Executed & Logged ({resolvedRecs.length})
+          </button>
+        </div>
+      </div>
+
+      {/* ── Recommendations List ── */}
+      <div style={{ display: "flex", flexDirection: "column", gap: 16, maxHeight: 500, overflowY: "auto", paddingRight: 4 }}>
+        {displayedRecs.length === 0 ? (
+          <div
+            style={{
+              background: CARD,
+              border: `1px solid ${BORDER}`,
+              borderRadius: 14,
+              padding: "48px 24px",
+              textAlign: "center",
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              gap: 14,
+            }}
+          >
+            <div
+              style={{
+                width: 64,
+                height: 64,
+                borderRadius: "50%",
+                background: activeTab === "active" ? "linear-gradient(135deg, #052e16 0%, #14532d 100%)" : "linear-gradient(135deg, #121722 0%, #1e293b 100%)",
+                border: `2px solid ${activeTab === "active" ? "#10b981" : BORDER}`,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                fontSize: 28,
+                boxShadow: activeTab === "active" ? "0 0 24px rgba(16,185,129,0.25)" : "none",
+              }}
+            >
+              ✓
+            </div>
+            <div style={{ color: activeTab === "active" ? "#34d399" : TEXT, fontWeight: 700, fontSize: 17 }}>
+              {activeTab === "active" ? "All Actions Resolved" : "No Executed Actions Yet"}
+            </div>
+            <div style={{ color: MUTED, fontSize: 13, maxWidth: 320, lineHeight: 1.6 }}>
+              {activeTab === "active"
+                ? "No pending recommendations require your approval. Protocol-0 AI Mesh is fully synchronized."
+                : "No recommendations have been executed or rejected in this session."}
+            </div>
+          </div>
+        ) : (
+          displayedRecs.map((r) => {
             const state = actionStates[r.recommendationId] || {};
             const currentStatus = state.status || r.status;
             const isPending = currentStatus === "pending";
+            const isExecuting = currentStatus === "executing" || state.loading;
+            const priTheme = priorityStyles[r.priority] || priorityStyles.low;
+            const statTheme = statusColors[currentStatus] || statusColors.pending;
 
             return (
               <div
                 key={r.recommendationId}
+                className="interactive-card"
                 style={{
-                  background: cardBg,
-                  border: `1px solid ${border}`,
-                  borderRadius: 8,
-                  padding: 20,
-                  boxShadow: shadow,
-                  backdropFilter,
-                  transition: "all 0.3s ease",
+                  background: CARD,
+                  border: `1px solid ${BORDER}`,
+                  borderLeft: `4px solid ${priTheme.text}`,
+                  borderRadius: 14,
+                  padding: 22,
+                  boxShadow: priTheme.glow,
+                  position: "relative",
+                  animation: "fadeIn 0.2s ease",
                 }}
               >
-                {/* Meta details */}
-                <div
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: 8,
-                    marginBottom: 12,
-                    flexWrap: "wrap",
-                  }}
-                >
-                  <span
-                    style={{
-                      padding: "3px 10px",
-                      borderRadius: 999,
-                      background: "#1c1c1c",
-                      color: "#fff",
-                      fontSize: 10,
-                      fontWeight: 500,
-                      textTransform: "uppercase",
-                    }}
-                  >
-                    {r.priority} Priority
-                  </span>
-                  <span style={{ fontSize: 12, color: muted, fontWeight: 700 }}>
-                    Incident: {r.incidentId} · Recommendation:{" "}
-                    {r.recommendationId}
-                  </span>
+                {/* Meta Header */}
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14, flexWrap: "wrap", gap: 10 }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
+                    <span
+                      style={{
+                        padding: "3px 10px",
+                        borderRadius: 6,
+                        background: priTheme.bg,
+                        border: `1px solid ${priTheme.border}`,
+                        color: priTheme.text,
+                        fontSize: 10,
+                        fontWeight: 700,
+                        textTransform: "uppercase",
+                      }}
+                    >
+                      {r.priority} Priority
+                    </span>
+                    <span style={{ fontSize: 12, color: MUTED }}>Target: <b style={{ color: "#e2e8f0" }}>{r.mcpServer} MCP</b></span>
+                    <span style={{ fontSize: 12, color: MUTED }}>Incident: <b style={{ color: "#38bdf8" }}>{r.incidentId}</b></span>
+                  </div>
 
-                  {/* Status Tag */}
                   <span
                     style={{
-                      marginLeft: "auto",
+                      display: "inline-flex",
+                      alignItems: "center",
+                      gap: 6,
                       fontSize: 11,
-                      padding: "3px 10px",
-                      borderRadius: 6,
-                      fontWeight: 500,
+                      padding: "4px 12px",
+                      borderRadius: 999,
+                      background: statTheme.bg,
+                      border: `1px solid ${statTheme.border}`,
+                      color: statTheme.text,
+                      fontWeight: 600,
                       textTransform: "uppercase",
-                      background:
-                        currentStatus === "executed"
-                          ? "rgba(16,185,129,0.15)"
-                          : currentStatus === "rejected"
-                            ? "rgba(239,68,68,0.15)"
-                            : "rgba(245,158,11,0.15)",
-                      color:
-                        currentStatus === "executed"
-                          ? "#10b981"
-                          : currentStatus === "rejected"
-                            ? "#ef4444"
-                            : "#f59e0b",
                     }}
                   >
+                    <span style={{ width: 6, height: 6, borderRadius: "50%", background: statTheme.text, animation: isPending ? "pulse 1.5s infinite" : "none" }} />
                     {currentStatus}
                   </span>
                 </div>
 
-                {/* Body */}
-                <div style={{ fontSize: 16, fontWeight: 500, marginBottom: 6 }}>
-                  {r.title}
-                </div>
-                <div
-                  style={{
-                    fontSize: 14,
-                    lineHeight: 1.5,
-                    color: text,
-                    marginBottom: 12,
-                  }}
-                >
-                  {r.description}
-                </div>
+                {/* Title & Description */}
+                <div style={{ fontSize: 17, fontWeight: 700, color: TEXT, marginBottom: 8 }}>{r.title}</div>
+                <div style={{ fontSize: 14, color: "#cbd5e1", lineHeight: 1.6, marginBottom: 16 }}>{r.description}</div>
 
-                {/* Sub-details (Impact, Evidence, Confidence) */}
-                {(r.businessImpact || r.evidence || r.confidence) && (
+                {/* Sub-details Panel */}
+                {(r.businessImpact || r.evidence || r.confidence !== undefined) && (
                   <div
                     style={{
-                      background: isDark ? "rgba(15, 23, 42, 0.4)" : "#f1f5f9",
-                      borderRadius: 8,
-                      padding: 12,
-                      marginBottom: 16,
+                      background: "#090d14",
+                      borderRadius: 10,
+                      padding: 14,
+                      marginBottom: 18,
                       fontSize: 12,
-                      lineHeight: 1.4,
-                      border: `1px solid ${border}`,
+                      lineHeight: 1.5,
+                      border: `1px solid ${BORDER}`,
+                      display: "grid",
+                      gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
+                      gap: 12,
                     }}
                   >
-                    {r.confidence && (
-                      <div style={{ marginBottom: 6 }}>
-                        <b>Confidence Level:</b>{" "}
-                        <span style={{ color: "#10b981", fontWeight: 500 }}>
-                          {r.confidence}%
-                        </span>
+                    {r.confidence !== undefined && (
+                      <div>
+                        <div style={{ color: MUTED, fontSize: 10, fontWeight: 700, textTransform: "uppercase", marginBottom: 2 }}>AI Confidence</div>
+                        <div style={{ color: "#34d399", fontWeight: 700, fontSize: 13 }}>✓ {r.confidence}% Match</div>
                       </div>
                     )}
                     {r.businessImpact && (
-                      <div style={{ marginBottom: 6 }}>
-                        <b>Estimated Impact:</b> {r.businessImpact}
+                      <div>
+                        <div style={{ color: MUTED, fontSize: 10, fontWeight: 700, textTransform: "uppercase", marginBottom: 2 }}>Projected Impact</div>
+                        <div style={{ color: TEXT }}>{r.businessImpact}</div>
                       </div>
                     )}
                     {r.evidence && (
-                      <div>
-                        <b>Supporting Evidence:</b> <i>{r.evidence}</i>
+                      <div style={{ gridColumn: "1 / -1" }}>
+                        <div style={{ color: MUTED, fontSize: 10, fontWeight: 700, textTransform: "uppercase", marginBottom: 2 }}>Telemetry Evidence</div>
+                        <div style={{ color: "#fbbf24", fontStyle: "italic" }}>"{r.evidence}"</div>
                       </div>
                     )}
                   </div>
                 )}
 
-                {/* Action buttons */}
-                {isPending && (
+                {/* Error Banner */}
+                {state.error && (
                   <div
                     style={{
-                      display: "flex",
-                      gap: 12,
-                      borderTop: `1px solid ${border}`,
-                      paddingTop: 14,
+                      background: "rgba(239, 68, 68, 0.15)",
+                      border: "1px solid rgba(239, 68, 68, 0.4)",
+                      color: "#f87171",
+                      padding: "10px 14px",
+                      borderRadius: 8,
+                      fontSize: 12,
+                      marginBottom: 16,
+                      fontWeight: 500,
                     }}
                   >
+                    ⚠️ Execution failed: {state.error}
+                  </div>
+                )}
+
+                {/* Interactive Action Buttons */}
+                {isPending && (
+                  <div style={{ display: "flex", gap: 12, justifyContent: "flex-end", paddingTop: 16, borderTop: `1px solid ${BORDER}`, flexWrap: "wrap" }}>
                     <button
-                      onClick={() => handleAction(r.recommendationId, true, r.zero_trust_token)}
-                      disabled={state.loading}
+                      onClick={() => handleAction(r, "reject")}
+                      disabled={isExecuting}
                       style={{
-                        background: "#10b981",
-                        color: "#fff",
-                        border: "none",
+                        background: "transparent",
+                        border: `1px solid ${BORDER}`,
+                        color: MUTED,
+                        padding: "10px 18px",
                         borderRadius: 8,
-                        padding: "10px 20px",
                         fontSize: 13,
-                        fontWeight: 500,
-                        cursor: "pointer",
-                        flex: 1,
-                        boxShadow: "0 4px 12px rgba(16,185,129,0.2)",
-                        transition: "opacity 0.2s",
-                        opacity: state.loading ? 0.6 : 1,
-                      }}
-                    >
-                      {state.loading ? "Executing..." : "Approve & Execute"}
-                    </button>
-                    <button
-                      onClick={() => handleAction(r.recommendationId, false, r.zero_trust_token)}
-                      disabled={state.loading}
-                      style={{
-                        background: "none",
-                        color: "#ef4444",
-                        border: `1px solid #ef4444`,
-                        borderRadius: 8,
-                        padding: "10px 20px",
-                        fontSize: 13,
-                        fontWeight: 500,
-                        cursor: "pointer",
-                        flex: 1,
-                        transition: "background 0.2s",
-                        opacity: state.loading ? 0.6 : 1,
+                        fontWeight: 600,
+                        cursor: isExecuting ? "not-allowed" : "pointer",
+                        transition: "all 0.2s ease",
                       }}
                     >
                       Reject Proposal
                     </button>
-                  </div>
-                )}
-
-                {/* Error message */}
-                {state.error && (
-                  <div
-                    style={{
-                      color: "#ef4444",
-                      fontSize: 12,
-                      marginTop: 8,
-                      fontWeight: 700,
-                    }}
-                  >
-                    ❌ {state.error}
+                    <button
+                      onClick={() => handleAction(r, "execute")}
+                      disabled={isExecuting}
+                      style={{
+                        background: isExecuting ? "#334155" : "linear-gradient(135deg, #10b981 0%, #059669 100%)",
+                        border: "none",
+                        color: "#ffffff",
+                        padding: "10px 24px",
+                        borderRadius: 8,
+                        fontSize: 13,
+                        fontWeight: 700,
+                        cursor: isExecuting ? "not-allowed" : "pointer",
+                        boxShadow: isExecuting ? "none" : "0 4px 15px rgba(16, 185, 129, 0.35)",
+                        transition: "all 0.2s ease",
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 8,
+                      }}
+                    >
+                      {isExecuting ? "⚡ Executing via MCP..." : `⚡ Approve & Execute via ${r.mcpServer}`}
+                    </button>
                   </div>
                 )}
               </div>
             );
-          })}
-        </div>
-      )}
+          })
+        )}
+      </div>
     </div>
   );
 }

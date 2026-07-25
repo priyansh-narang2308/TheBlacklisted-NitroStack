@@ -1,7 +1,7 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
-import { useTheme, useWidgetSDK } from "@nitrostack/widgets";
+import React, { useState } from "react";
+import { useWidgetSDK } from "@nitrostack/widgets";
 
 export const dynamic = "force-dynamic";
 
@@ -20,8 +20,7 @@ const SCENARIOS: Scenario[] = [
     name: "CI/CD Pipeline Crash",
     category: "CI/CD Failure",
     severity: "high",
-    description:
-      "Trigger a Jest test suite failure on main branch to block integration checks.",
+    description: "Trigger a Jest test suite failure on main branch to block integration checks.",
     systems: ["GitHub"],
   },
   {
@@ -29,8 +28,7 @@ const SCENARIOS: Scenario[] = [
     name: "Primary Auth Merge Lock",
     category: "Merge Failure",
     severity: "medium",
-    description:
-      "Create a merge check conflict for the primary authorization router branch.",
+    description: "Create a merge check conflict for the primary authorization router branch.",
     systems: ["GitHub"],
   },
   {
@@ -38,8 +36,7 @@ const SCENARIOS: Scenario[] = [
     name: "Production Rollout Failure",
     category: "Deployment Failure",
     severity: "critical",
-    description:
-      "Simulate a database migration mismatch crash on deployment of container pods.",
+    description: "Simulate a database migration mismatch crash on deployment of container pods.",
     systems: ["GitHub", "Datadog"],
   },
   {
@@ -47,8 +44,7 @@ const SCENARIOS: Scenario[] = [
     name: "Customer Support Alert",
     category: "Issue Spike",
     severity: "high",
-    description:
-      "Trigger a surge of Github HTTP 500 issue reports for Checkout & Payments.",
+    description: "Trigger a surge of Github HTTP 500 issue reports for Checkout & Payments.",
     systems: ["GitHub"],
   },
   {
@@ -56,8 +52,7 @@ const SCENARIOS: Scenario[] = [
     name: "Auth Gateway CPU Exhaustion",
     category: "Infrastructure Spike",
     severity: "critical",
-    description:
-      "Spike Gateway CPU capacity usage to 99% and trigger Datadog alerting.",
+    description: "Spike Gateway CPU capacity usage to 99% and trigger Datadog alerting.",
     systems: ["Datadog"],
   },
   {
@@ -65,8 +60,7 @@ const SCENARIOS: Scenario[] = [
     name: "Sprint Delivery Overload",
     category: "Sprint Risk",
     severity: "medium",
-    description:
-      "Simulate developer backlog overflow with remaining story points > 75.",
+    description: "Simulate developer backlog overflow with remaining story points > 75.",
     systems: ["Jira"],
   },
   {
@@ -74,359 +68,301 @@ const SCENARIOS: Scenario[] = [
     name: "Demo Review Block",
     category: "Feature Incomplete",
     severity: "medium",
-    description:
-      "Trigger incomplete critical tickets blocking the Enterprise Demo Review meeting.",
+    description: "Trigger incomplete critical tickets blocking the Enterprise Demo Review meeting.",
     systems: ["Jira", "Google Calendar"],
   },
   {
-    id: "deadline_near",
-    name: "Sprint Deadline Alert",
-    category: "Deadline Near",
+    id: "k8s_pod_crash",
+    name: "Kubernetes OOMKilled CrashLoop",
+    category: "Infrastructure Spike",
+    severity: "critical",
+    description: "Simulate payment-processor pod OOMKilled leading to CrashLoopBackOff.",
+    systems: ["Datadog"],
+  },
+  {
+    id: "database_latency",
+    name: "Postgres Connection Pool Exhaustion",
+    category: "Infrastructure Spike",
     severity: "high",
-    description:
-      "Move sprint end date to tomorrow with 65% tasks still incomplete.",
-    systems: ["Jira"],
+    description: "Exhaust pgBouncer connections causing 5000ms latency on checkouts.",
+    systems: ["Datadog"],
   },
   {
-    id: "employee_leave",
-    name: "Lead Engineer Absence",
-    category: "Employee Leave",
-    severity: "medium",
-    description:
-      "Simulate emergency medical leave overlap for critical payment ticket assignee.",
-    systems: ["Google Calendar", "Jira"],
-  },
-  {
-    id: "ooo_meeting_overlap",
-    name: "Schedule Sync Conflict",
-    category: "OOO Conflict",
-    severity: "low",
-    description:
-      "Create overlapping release sync meeting during team lead doctor OOO leave.",
-    systems: ["Google Calendar"],
+    id: "oauth_token_leak",
+    name: "Unrotated OAuth Token Detection",
+    category: "Security Alert",
+    severity: "critical",
+    description: "Simulate Secret Scanner detecting an unencrypted OAuth client secret.",
+    systems: ["GitHub"],
   },
 ];
 
-const severityColor: Record<string, string> = {
-  critical: "#ef4444",
-  high: "#f97316",
-  medium: "#f59e0b",
-  low: "#ffffff",
+const BG = "#0a0d14";
+const CARD = "#121722";
+const CARD_HOVER = "#181f2e";
+const BORDER = "#232d42";
+const TEXT = "#f8fafc";
+const MUTED = "#94a3b8";
+const FONT = '"Inter", -apple-system, BlinkMacSystemFont, sans-serif';
+
+const severityStyles: Record<
+  string,
+  { text: string; bg: string; border: string; glow: string }
+> = {
+  critical: {
+    text: "#f87171",
+    bg: "rgba(239, 68, 68, 0.12)",
+    border: "rgba(239, 68, 68, 0.35)",
+    glow: "0 0 20px rgba(239, 68, 68, 0.25)",
+  },
+  high: {
+    text: "#fbbf24",
+    bg: "rgba(245, 158, 11, 0.12)",
+    border: "rgba(245, 158, 11, 0.35)",
+    glow: "0 0 20px rgba(245, 158, 11, 0.2)",
+  },
+  medium: {
+    text: "#38bdf8",
+    bg: "rgba(56, 189, 248, 0.12)",
+    border: "rgba(56, 189, 248, 0.35)",
+    glow: "0 0 20px rgba(56, 189, 248, 0.2)",
+  },
+  low: {
+    text: "#94a3b8",
+    bg: "rgba(148, 163, 184, 0.12)",
+    border: "rgba(148, 163, 184, 0.3)",
+    glow: "none",
+  },
 };
 
-interface TriggerOutput {
-  success: boolean;
-  message: string;
-}
-
 export default function TriggerIncidentWidget() {
-  const theme = useTheme();
-  const { isReady, getToolOutput, callTool } = useWidgetSDK();
-  const toolOutput = getToolOutput<TriggerOutput>();
-
-  const [selectedScenario, setSelectedScenario] =
-    useState<string>("cicd_failure");
-  const [loading, setLoading] = useState(false);
+  const { isReady, callTool } = useWidgetSDK();
+  const [selectedScenario, setSelectedScenario] = useState<string>("cicd_failure");
+  const [isTriggering, setIsTriggering] = useState(false);
+  const [triggerSuccess, setTriggerSuccess] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [simulationLogs, setSimulationLogs] = useState<
-    Array<{
-      timestamp: string;
-      scenario: string;
-      message: string;
-      mode: "live" | "mock";
-    }>
-  >([]);
 
-  const isDark = theme === "dark";
-  const bg = "#111111";
-  const cardBg = "#1c1c1c";
-  const text = "#ffffff";
-  const muted = "#888888";
-  const border = "#2a2a2a";
-  const shadow = "none";
-  const backdropFilter = "none";
-
-  const shellStyle: React.CSSProperties = {
-    padding: 32,
-    textAlign: "center",
-    color: text,
-    background: bg,
-    borderRadius: 8,
-    fontFamily: '"Inter", -apple-system, sans-serif',
-  };
-
-  // Sync widget selection with whatever scenario was triggered via left-panel dropdown
-  // NOTE: must be declared BEFORE any early returns to comply with Rules of Hooks
-  useEffect(() => {
-    if (toolOutput?.message) {
-      const match = SCENARIOS.find((s) => toolOutput.message.includes(s.id));
-      if (match) {
-        setSelectedScenario(match.id);
-        setSimulationLogs((prev) => {
-          const alreadyLogged = prev.some(
-            (l) => l.scenario === match.id && Date.now() - new Date(l.timestamp).getTime() < 5000
-          );
-          if (alreadyLogged) return prev;
-          return [
-            { timestamp: new Date().toISOString(), scenario: match.id, message: toolOutput.message, mode: "live" as const },
-            ...prev,
-          ];
-        });
-      }
-    }
-  }, [toolOutput]);
-
-  if (!isReady)
+  if (!isReady) {
     return (
       <div
         style={{
-          ...shellStyle,
-          minHeight: 320,
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "center",
-          justifyContent: "center",
-          gap: 20,
+          padding: 48,
+          textAlign: "center",
+          color: TEXT,
+          background: BG,
+          borderRadius: 16,
+          fontFamily: FONT,
+          border: `1px solid ${BORDER}`,
         }}
       >
-        <div style={{ position: "relative", width: 72, height: 72 }}>
-          <div style={{ position: "absolute", inset: 0, borderRadius: "50%", border: "2px solid #b45309", animation: "pulse-ring 1.8s ease-out infinite" }} />
-          <div style={{ position: "absolute", inset: 8, borderRadius: "50%", border: "2px solid #f59e0b", animation: "pulse-ring 1.8s ease-out infinite 0.4s" }} />
-          <div style={{ position: "absolute", inset: 20, borderRadius: "50%", background: "#d97706", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18 }}>⚠️</div>
-        </div>
-        <div style={{ color: "#fcd34d", fontWeight: 600, fontSize: 15, letterSpacing: "0.02em" }}>Incident Simulator</div>
-        <div style={{ color: muted, fontSize: 12, display: "flex", alignItems: "center", gap: 8 }}>
-          <span style={{ display: "inline-block", width: 8, height: 8, borderRadius: "50%", background: "#f59e0b", animation: "blink 1.2s ease-in-out infinite" }} />
-          Connecting to simulation console...
-        </div>
+        <div className="spinner" style={{ marginBottom: 16, margin: "0 auto" }} />
+        <div style={{ fontSize: 15, color: MUTED }}>Connecting to Protocol-0 Chaos Simulator...</div>
         <style>{`
-          @keyframes pulse-ring { 0% { transform: scale(0.8); opacity: 1; } 100% { transform: scale(1.6); opacity: 0; } }
-          @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.2; } }
+          @keyframes spin { 100% { transform: rotate(360deg); } }
+          .spinner { width: 32px; height: 32px; border: 3px solid rgba(255,255,255,0.1); border-top-color: #38bdf8; border-radius: 50%; animation: spin 1s linear infinite; }
         `}</style>
       </div>
     );
+  }
 
+  const activeScenario = SCENARIOS.find((s) => s.id === selectedScenario) || SCENARIOS[0];
 
-  const triggerSimulation = async () => {
-    setLoading(true);
+  const handleTrigger = async () => {
+    setIsTriggering(true);
+    setTriggerSuccess(null);
     setError(null);
+
     try {
-      let result: TriggerOutput;
-      let mode: "live" | "mock" = "live";
-
-      try {
-        result = (await callTool("triggerIncident", {
-          incidentType: selectedScenario,
-        })) as unknown as TriggerOutput;
-      } catch (err) {
-        console.warn(
-          "Live tool call failed or running in standalone mode. Falling back to local mock.",
-          err,
-        );
-        result = {
-          success: true,
-          message: `Scenario ${selectedScenario} successfully triggered and processed by agents.`,
-        };
-        mode = "mock";
-      }
-
-      setSimulationLogs((prev) => [
-        {
-          timestamp: new Date().toISOString(),
-          scenario: selectedScenario,
-          message: result.message,
-          mode,
-        },
-        ...prev,
-      ]);
+      await callTool("trigger_incident", {
+        scenario_id: activeScenario.id,
+        severity: activeScenario.severity,
+        category: activeScenario.category,
+      });
+      setTriggerSuccess(`Incident [${activeScenario.name}] triggered successfully! Multi-agent diagnosis initiated.`);
+      setIsTriggering(false);
     } catch (err) {
-      console.error(err);
-      setError(err instanceof Error ? err.message : "Simulation failure.");
-    } finally {
-      setLoading(false);
+      setError(err instanceof Error ? err.message : "Failed to trigger incident scenario.");
+      setIsTriggering(false);
     }
   };
 
   return (
     <div
       style={{
-        background: bg,
-        color: text,
-        padding: 24,
-        borderRadius: 8,
-        fontFamily: '"Inter", -apple-system, sans-serif',
-        border: `1px solid ${border}`,
-        boxShadow: "none",
+        background: BG,
+        color: TEXT,
+        padding: 28,
+        borderRadius: 16,
+        fontFamily: FONT,
+        border: `1px solid ${BORDER}`,
+        boxShadow: "0 20px 50px rgba(0,0,0,0.5)",
+        position: "relative",
       }}
     >
-      {/* Header */}
+      <style>{`
+        @keyframes pulse {
+          0%, 100% { opacity: 1; transform: scale(1); }
+          50% { opacity: 0.4; transform: scale(0.92); }
+        }
+        @keyframes fadeIn {
+          from { opacity: 0; transform: translateY(6px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+        .interactive-card {
+          transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+          cursor: pointer;
+        }
+        .interactive-card:hover {
+          transform: translateY(-2px);
+          border-color: #38bdf8 !important;
+          box-shadow: 0 10px 25px -5px rgba(56, 189, 248, 0.15);
+        }
+      `}</style>
+
+      {/* ── Header ── */}
       <div
         style={{
           display: "flex",
           justifyContent: "space-between",
           alignItems: "center",
-          marginBottom: 20,
+          marginBottom: 24,
+          paddingBottom: 20,
+          borderBottom: `1px solid ${BORDER}`,
           flexWrap: "wrap",
-          gap: 12,
+          gap: 16,
         }}
       >
         <div>
-          <div
-            style={{
-              fontSize: 11,
-              letterSpacing: "0.5px",
-              color: "#ffffff",
-              fontWeight: 500,
-              textTransform: "uppercase",
-            }}
-          >
-            Hackathon Control Center
+          <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
+            <span
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: 6,
+                padding: "2px 8px",
+                borderRadius: 999,
+                background: "rgba(56, 189, 248, 0.1)",
+                border: "1px solid rgba(56, 189, 248, 0.2)",
+                color: "#38bdf8",
+                fontSize: 10,
+                fontWeight: 600,
+                letterSpacing: "0.5px",
+              }}
+            >
+              <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#38bdf8", animation: "pulse 1.5s infinite" }} />
+              LIVE TELEMETRY STREAM
+            </span>
+            <span style={{ fontSize: 11, color: MUTED }}>• Chaos Engineering Simulator</span>
           </div>
           <div
             style={{
-              fontSize: 22,
-              fontWeight: 500,
-              marginTop: 4,
-              letterSpacing: "0",
+              fontSize: 26,
+              fontWeight: 700,
+              letterSpacing: "-0.5px",
+              background: "linear-gradient(135deg, #fff 0%, #cbd5e1 100%)",
+              WebkitBackgroundClip: "text",
+              WebkitTextFillColor: "transparent",
             }}
           >
-            Multi-Agent Incident Simulator
+            Incident Scenario Generator
           </div>
         </div>
-        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-          <span
-            style={{
-              fontSize: 10,
-              padding: "4px 8px",
-              background: isDark ? "#1c1c1c" : "#1c1c1c",
-              color: "#ffffff",
-              borderRadius: 6,
-              fontWeight: 500,
-              border: "1px solid #2a2a2a",
-            }}
-          >
-            10 Scenarios
-          </span>
-        </div>
+
+        <span style={{ fontSize: 12, color: MUTED, background: "#090d14", padding: "6px 14px", borderRadius: 8, border: `1px solid ${BORDER}`, fontWeight: 600 }}>
+          ⚡ 10 Chaos Scenarios Loaded
+        </span>
       </div>
+
+      {/* Notifications */}
+      {triggerSuccess && (
+        <div
+          style={{
+            background: "rgba(16, 185, 129, 0.12)",
+            border: "1px solid rgba(16, 185, 129, 0.4)",
+            color: "#34d399",
+            padding: "14px 18px",
+            borderRadius: 12,
+            fontSize: 13,
+            fontWeight: 600,
+            marginBottom: 20,
+            animation: "fadeIn 0.2s ease",
+            display: "flex",
+            alignItems: "center",
+            gap: 10,
+          }}
+        >
+          <span style={{ fontSize: 18 }}>✓</span>
+          <span>{triggerSuccess}</span>
+        </div>
+      )}
 
       {error && (
         <div
           style={{
-            color: "#ef4444",
-            fontSize: 12,
-            marginBottom: 12,
-            fontWeight: 700,
+            background: "rgba(239, 68, 68, 0.12)",
+            border: "1px solid rgba(239, 68, 68, 0.4)",
+            color: "#f87171",
+            padding: "14px 18px",
+            borderRadius: 12,
+            fontSize: 13,
+            fontWeight: 600,
+            marginBottom: 20,
+            animation: "fadeIn 0.2s ease",
           }}
         >
-          ❌ {error}
+          ⚠️ Execution Error: {error}
         </div>
       )}
 
-      {/* Main Grid: Left Scenarios, Right Trigger controls */}
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: "1.8fr 1fr",
-          gap: 20,
-          marginBottom: 20,
-        }}
-      >
-        {/* Scenarios Grid */}
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "1fr 1fr",
-            gap: 12,
-            maxHeight: 460,
-            overflowY: "auto",
-            paddingRight: 6,
-          }}
-        >
+      {/* ── Main Split View ── */}
+      <div style={{ display: "grid", gridTemplateColumns: "1.6fr 1fr", gap: 20 }}>
+        {/* Left: Scenarios Grid */}
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, maxHeight: 460, overflowY: "auto", paddingRight: 6 }}>
           {SCENARIOS.map((s) => {
             const isSelected = selectedScenario === s.id;
+            const sevTheme = severityStyles[s.severity] || severityStyles.low;
+
             return (
               <div
                 key={s.id}
                 onClick={() => setSelectedScenario(s.id)}
+                className="interactive-card"
                 style={{
-                  background: isSelected
-                    ? isDark
-                      ? "#1c1c1c"
-                      : "#252525"
-                    : cardBg,
-                  border: isSelected
-                    ? "1px solid #ffffff"
-                    : `1px solid ${border}`,
-                  borderRadius: 8,
-                  padding: 14,
-                  cursor: "pointer",
-                  boxShadow: isSelected
-                    ? "none"
-                    : shadow,
-                  transition: "all 0.2s ease",
-                  backdropFilter,
+                  background: isSelected ? CARD_HOVER : CARD,
+                  border: `1px solid ${isSelected ? "#38bdf8" : BORDER}`,
+                  borderRadius: 12,
+                  padding: 16,
+                  boxShadow: isSelected ? "0 0 20px rgba(56, 189, 248, 0.15)" : "none",
                 }}
               >
-                <div
-                  style={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    alignItems: "center",
-                    marginBottom: 6,
-                  }}
-                >
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
                   <span
                     style={{
-                      fontSize: 9,
-                      padding: "2px 6px",
+                      padding: "2px 8px",
                       borderRadius: 4,
-                      background: "#1c1c1c",
-                      color: "#fff",
-                      fontWeight: 600,
+                      background: sevTheme.bg,
+                      border: `1px solid ${sevTheme.border}`,
+                      color: sevTheme.text,
+                      fontSize: 9,
+                      fontWeight: 700,
                       textTransform: "uppercase",
                     }}
                   >
                     {s.severity}
                   </span>
-                  <span style={{ fontSize: 10, color: muted, fontWeight: 600 }}>
-                    {s.category}
-                  </span>
+                  <span style={{ fontSize: 11, color: MUTED, fontWeight: 600 }}>{s.category}</span>
                 </div>
-                <div
-                  style={{
-                    fontSize: 14,
-                    fontWeight: 500,
-                    color: isSelected ? "#ffffff" : text,
-                  }}
-                >
+
+                <div style={{ fontSize: 15, fontWeight: 700, color: isSelected ? "#38bdf8" : TEXT, marginBottom: 6 }}>
                   {s.name}
                 </div>
-                <div
-                  style={{
-                    fontSize: 11,
-                    color: muted,
-                    marginTop: 4,
-                    lineHeight: 1.4,
-                  }}
-                >
+                <div style={{ fontSize: 12, color: MUTED, lineHeight: 1.5, display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>
                   {s.description}
                 </div>
-                <div style={{ display: "flex", gap: 4, marginTop: 8 }}>
+
+                <div style={{ display: "flex", gap: 6, marginTop: 10, flexWrap: "wrap" }}>
                   {s.systems.map((sys) => (
-                    <span
-                      key={sys}
-                      style={{
-                        fontSize: 8,
-                        padding: "2px 5px",
-                        background: isDark
-                          ? "rgba(255,255,255,0.08)"
-                          : "rgba(0,0,0,0.04)",
-                        borderRadius: 4,
-                        color: muted,
-                        fontWeight: 700,
-                      }}
-                    >
+                    <span key={sys} style={{ fontSize: 10, padding: "2px 8px", borderRadius: 4, background: "rgba(255,255,255,0.04)", border: `1px solid ${BORDER}`, color: "#cbd5e1" }}>
                       {sys}
                     </span>
                   ))}
@@ -436,208 +372,86 @@ export default function TriggerIncidentWidget() {
           })}
         </div>
 
-        {/* Action Panel */}
+        {/* Right: Active Scenario Trigger Console */}
         <div
           style={{
-            background: cardBg,
-            border: `1px solid ${border}`,
-            borderRadius: 8,
-            padding: 20,
+            background: "linear-gradient(145deg, #121722 0%, #0c1018 100%)",
+            border: `1px solid #38bdf8`,
+            borderRadius: 16,
+            padding: 24,
+            boxShadow: "0 10px 30px rgba(56, 189, 248, 0.1)",
             display: "flex",
             flexDirection: "column",
             justifyContent: "space-between",
-            boxShadow: shadow,
-            backdropFilter,
           }}
         >
           <div>
-            <div
-              style={{
-                fontSize: 12,
-                fontWeight: 500,
-                color: muted,
-                textTransform: "uppercase",
-                marginBottom: 12,
-              }}
-            >
-              Selected Scenario
-            </div>
-
-            {(() => {
-              const active = SCENARIOS.find((s) => s.id === selectedScenario);
-              if (!active) return null;
-              return (
-                <div>
-                  <div
-                    style={{ fontSize: 18, fontWeight: 500, color: "#ffffff" }}
-                  >
-                    {active.name}
-                  </div>
-                  <div
-                    style={{
-                      fontSize: 12,
-                      color: muted,
-                      marginTop: 8,
-                      lineHeight: 1.5,
-                    }}
-                  >
-                    {active.description}
-                  </div>
-
-                  <div
-                    style={{
-                      marginTop: 16,
-                      display: "flex",
-                      flexDirection: "column",
-                      gap: 6,
-                      fontSize: 12,
-                    }}
-                  >
-                    <div
-                      style={{
-                        display: "flex",
-                        justifyContent: "space-between",
-                      }}
-                    >
-                      <span style={{ color: muted }}>Scenario ID:</span>
-                      <code>{active.id}</code>
-                    </div>
-                    <div
-                      style={{
-                        display: "flex",
-                        justifyContent: "space-between",
-                      }}
-                    >
-                      <span style={{ color: muted }}>Severity:</span>
-                      <span
-                        style={{
-                          color: severityColor[active.severity],
-                          fontWeight: 500,
-                          textTransform: "uppercase",
-                        }}
-                      >
-                        {active.severity}
-                      </span>
-                    </div>
-                    <div
-                      style={{
-                        display: "flex",
-                        justifyContent: "space-between",
-                      }}
-                    >
-                      <span style={{ color: muted }}>Mock Systems:</span>
-                      <span style={{ fontWeight: 700 }}>
-                        {active.systems.join(", ")}
-                      </span>
-                    </div>
-                  </div>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 16, paddingBottom: 16, borderBottom: `1px solid ${BORDER}` }}>
+              <div>
+                <div style={{ fontSize: 11, color: "#38bdf8", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.5px", marginBottom: 4 }}>
+                  Selected Chaos Payload
                 </div>
-              );
-            })()}
+                <div style={{ fontSize: 20, fontWeight: 700 }}>{activeScenario.name}</div>
+              </div>
+              <span
+                style={{
+                  padding: "4px 10px",
+                  borderRadius: 6,
+                  background: (severityStyles[activeScenario.severity] || severityStyles.low).bg,
+                  color: (severityStyles[activeScenario.severity] || severityStyles.low).text,
+                  border: `1px solid ${(severityStyles[activeScenario.severity] || severityStyles.low).border}`,
+                  fontSize: 11,
+                  fontWeight: 700,
+                  textTransform: "uppercase",
+                }}
+              >
+                {activeScenario.severity}
+              </span>
+            </div>
+
+            <div style={{ marginBottom: 20 }}>
+              <div style={{ fontSize: 12, color: MUTED, textTransform: "uppercase", letterSpacing: "0.5px", marginBottom: 6 }}>Simulation Summary</div>
+              <div style={{ fontSize: 13, lineHeight: 1.6, background: "#090d14", padding: 14, borderRadius: 10, border: `1px solid ${BORDER}`, color: "#e2e8f0" }}>
+                {activeScenario.description}
+              </div>
+            </div>
+
+            <div style={{ marginBottom: 24 }}>
+              <div style={{ fontSize: 12, color: MUTED, textTransform: "uppercase", letterSpacing: "0.5px", marginBottom: 10 }}>Targeted MCP Integrations</div>
+              <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                {activeScenario.systems.map((sys) => (
+                  <div key={sys} style={{ display: "flex", alignItems: "center", gap: 6, background: "rgba(255,255,255,0.05)", padding: "6px 12px", borderRadius: 8, border: `1px solid ${BORDER}`, fontSize: 12, fontWeight: 500 }}>
+                    <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#f87171" }} />
+                    {sys} Server
+                  </div>
+                ))}
+              </div>
+            </div>
           </div>
 
-          <button
-            onClick={triggerSimulation}
-            disabled={loading}
-            style={{
-              background: "#e67e22",
-              color: "#fff",
-              border: "none",
-              borderRadius: 8,
-              padding: "12px 20px",
-              fontSize: 14,
-              fontWeight: 500,
-              cursor: "pointer",
-              boxShadow: "none",
-              marginTop: 20,
-              transition: "opacity 0.2s",
-              opacity: loading ? 0.6 : 1,
-            }}
-          >
-            {loading ? "Triggering..." : "Fire Incident Scenario"}
-          </button>
-        </div>
-      </div>
-
-      {/* Simulator Logs Feed */}
-      <div
-        style={{
-          fontSize: 12,
-          fontWeight: 500,
-          color: muted,
-          textTransform: "uppercase",
-          letterSpacing: "0.4px",
-          marginBottom: 10,
-        }}
-      >
-        Simulator Output Feed
-      </div>
-
-      <div
-        style={{
-          maxHeight: 180,
-          overflowY: "auto",
-          background: isDark ? "rgba(15,23,42,0.4)" : "#f1f5f9",
-          borderRadius: 8,
-          border: `1px solid ${border}`,
-          padding: 12,
-          display: "flex",
-          flexDirection: "column",
-          gap: 8,
-        }}
-      >
-        {simulationLogs.map((log, i) => (
-          <div
-            key={i}
-            style={{
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: "flex-start",
-              fontSize: 12,
-              lineHeight: 1.4,
-              paddingBottom: 6,
-              borderBottom:
-                i < simulationLogs.length - 1 ? `1px solid ${border}` : "none",
-            }}
-          >
-            <div>
-              <span
-                style={{ color: "#10b981", fontWeight: 500, marginRight: 6 }}
-              >
-                [OK]
-              </span>
-              <span style={{ color: text, fontWeight: 600 }}>
-                {log.message}
-              </span>
-              {log.mode === "mock" && (
-                <span
-                  style={{
-                    marginLeft: 6,
-                    fontSize: 9,
-                    background: "#1c1c1c",
-                    color: "#888888",
-                    padding: "1px 4px",
-                    borderRadius: 4,
-                  border: "1px solid #2a2a2a",
-                  fontWeight: 400,
-                  }}
-                >
-                  MOCK
-                </span>
-              )}
-            </div>
-            <span
+          <div style={{ background: "rgba(239, 68, 68, 0.05)", border: "1px dashed rgba(239, 68, 68, 0.3)", borderRadius: 12, padding: 16, textAlign: "center" }}>
+            <div style={{ fontSize: 13, fontWeight: 600, marginBottom: 10, color: "#f87171" }}>Initiate Multi-Agent Incident Loop</div>
+            <button
+              onClick={handleTrigger}
+              disabled={isTriggering}
               style={{
-                color: muted,
-                fontSize: 10,
-                flexShrink: 0,
-                marginLeft: 12,
+                width: "100%",
+                background: isTriggering ? "#334155" : "linear-gradient(135deg, #ef4444 0%, #dc2626 100%)",
+                color: "#ffffff",
+                border: "none",
+                padding: "12px 20px",
+                borderRadius: 8,
+                fontSize: 14,
+                fontWeight: 700,
+                cursor: isTriggering ? "not-allowed" : "pointer",
+                boxShadow: isTriggering ? "none" : "0 4px 15px rgba(239, 68, 68, 0.35)",
+                transition: "all 0.2s ease",
               }}
             >
-              {new Date(log.timestamp).toLocaleTimeString()}
-            </span>
+              {isTriggering ? "⚡ Injecting Chaos Scenario..." : `🔥 Trigger Chaos Scenario: ${activeScenario.name}`}
+            </button>
           </div>
-        ))}
+        </div>
       </div>
     </div>
   );
