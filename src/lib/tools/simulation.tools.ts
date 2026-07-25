@@ -60,6 +60,7 @@ export class SimulationTools {
         ),
     }),
   })
+  @Widget("simulate-disaster")
   async simulate_disaster(
     input: { targetNode: string },
     ctx: ExecutionContext,
