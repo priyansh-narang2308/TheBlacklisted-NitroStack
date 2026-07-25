@@ -460,29 +460,38 @@ export default function TriggerIncidentWidget() {
             </div>
           </div>
 
-          <div style={{ background: "rgba(239, 68, 68, 0.05)", border: "1px dashed rgba(239, 68, 68, 0.3)", borderRadius: 12, padding: 16, textAlign: "center" }}>
-            <div style={{ fontSize: 12, fontWeight: 600, marginBottom: 10, color: "#f87171", textTransform: "uppercase", letterSpacing: "0.5px" }}>
-              Initiate Multi-Agent Incident Loop
+          <div style={{ paddingTop: 16, borderTop: `1px solid ${BORDER}`, display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
+            <div style={{ fontSize: 11, color: MUTED, lineHeight: 1.4 }}>
+              <div style={{ fontWeight: 600, color: "#f87171", marginBottom: 2 }}>INITIATE MULTI-AGENT LOOP</div>
+              <div>{activeScenario.name}</div>
             </div>
             <button
               onClick={handleTrigger}
               disabled={isTriggering}
               style={{
-                width: "100%",
-                background: isTriggering ? "#334155" : "linear-gradient(135deg, #ef4444 0%, #dc2626 100%)",
-                color: "#ffffff",
-                border: "none",
-                padding: "12px 20px",
+                flexShrink: 0,
+                background: isTriggering ? "transparent" : "transparent",
+                color: isTriggering ? MUTED : "#f87171",
+                border: `1px solid ${isTriggering ? BORDER : "rgba(239, 68, 68, 0.5)"}`,
+                padding: "8px 16px",
                 borderRadius: 8,
-                fontSize: 13,
-                fontWeight: 700,
+                fontSize: 12,
+                fontWeight: 600,
                 cursor: isTriggering ? "not-allowed" : "pointer",
-                boxShadow: isTriggering ? "none" : "0 4px 15px rgba(239, 68, 68, 0.35)",
                 transition: "all 0.2s ease",
-                letterSpacing: "0.5px",
+                letterSpacing: "0.4px",
+                display: "flex",
+                alignItems: "center",
+                gap: 6,
+                whiteSpace: "nowrap",
               }}
             >
-              {isTriggering ? "Executing Injection Protocol..." : `Execute Simulation Drill: ${activeScenario.name}`}
+              <span style={{
+                width: 6, height: 6, borderRadius: "50%",
+                background: isTriggering ? MUTED : "#f87171",
+                animation: isTriggering ? "none" : "pulse 1.5s infinite",
+              }} />
+              {isTriggering ? "Running..." : "Trigger"}
             </button>
           </div>
         </div>
