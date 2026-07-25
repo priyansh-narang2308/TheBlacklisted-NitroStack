@@ -40,10 +40,10 @@ export class SimulationTools {
     ctx.logger.info("Simulating scenario trigger", {
       type: input.incidentType,
     });
-    this.twin.triggerScenario(input.incidentType);
+    await this.twin.triggerScenario(input.incidentType);
     return {
       success: true,
-      message: `Scenario ${input.incidentType} successfully triggered.`,
+      message: `Scenario ${input.incidentType} triggered. Incident created with recommendations. Run getRecommendations to see results.`,
     };
   }
 

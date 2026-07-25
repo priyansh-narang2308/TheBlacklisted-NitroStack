@@ -160,7 +160,7 @@ export default function RecommendationWidget() {
       </div>
     );
 
-  const recommendations = data.recommendations ?? [];
+  const recommendations = Array.isArray(data) ? data : (data.recommendations ?? []);
 
   const handleAction = async (recommendationId: string, approve: boolean, token?: string) => {
     setActionStates((prev) => ({

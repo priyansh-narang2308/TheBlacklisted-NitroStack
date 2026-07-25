@@ -1,5 +1,6 @@
 import fs from "fs";
 import path from "path";
+import crypto from "crypto";
 import {
   Injectable,
   OnApplicationBootstrap,
@@ -328,12 +329,13 @@ export class ProtocolZeroService
         config.systemInstruction = systemInstruction;
       }
 
-      const interaction = await ai.interactions.create({
-        model: "gemini-flash-latest",
-        input: prompt,
+      const response = await ai.models.generateContent({
+        model: "gemini-2.5-flash",
+        contents: prompt,
+        config,
       });
 
-      const textOutput = interaction.output_text;
+      const textOutput = response.text;
       if (!textOutput) throw new Error("Empty response from Gemini");
 
       let cleanedOutput = textOutput;
@@ -382,14 +384,14 @@ export class ProtocolZeroService
   }
 
   // 1. CI/CD Failures
-  private checkCICDFailures() {
+  private async checkCICDFailures() {
     const failedRun = this.enterpriseState.github.workflowRuns.find(
       (r) => r.status === "completed" && r.conclusion === "failure",
     );
     if (failedRun) {
       const incidentTitle = `GitHub Action Workflow Failure: ${failedRun.name}`;
       const trigger = `Workflow run ${failedRun.id} completed with status 'failure' on commit ${failedRun.commitSha}.`;
-      this.triggerIncidentFlow(
+      await this.triggerIncidentFlow(
         "CI/CD Failure",
         incidentTitle,
         trigger,
@@ -401,14 +403,14 @@ export class ProtocolZeroService
   }
 
   // 2. Merge Failures
-  private checkMergeFailures() {
+  private async checkMergeFailures() {
     const unmergeablePr = this.enterpriseState.github.pullRequests.find(
       (pr) => !pr.mergeable,
     );
     if (unmergeablePr) {
       const incidentTitle = `GitHub Merge Failure: PR #${unmergeablePr.id}`;
       const trigger = `Pull request '${unmergeablePr.title}' by ${unmergeablePr.author} has conflicts or failed status checks.`;
-      this.triggerIncidentFlow(
+      await this.triggerIncidentFlow(
         "Merge Failure",
         incidentTitle,
         trigger,
@@ -420,7 +422,7 @@ export class ProtocolZeroService
   }
 
   // 3. Deployment Failures
-  private checkDeploymentFailures() {
+  private async checkDeploymentFailures() {
     const failedDeploy = this.enterpriseState.github.deployments.find(
       (d) => d.status === "failed",
     );
@@ -432,7 +434,7 @@ export class ProtocolZeroService
         this.enterpriseState.datadog.cpu = 96; // Inject CPU spike to simulate correlation
       }
 
-      this.triggerIncidentFlow(
+      await this.triggerIncidentFlow(
         "Deployment Failure",
         incidentTitle,
         trigger,
@@ -444,7 +446,7 @@ export class ProtocolZeroService
   }
 
   // 4. Issue Spike
-  private checkIssueSpikes() {
+  private async checkIssueSpikes() {
     const rate = this.enterpriseState.github.issues.length;
     const baseRate = this.enterpriseState.github.averageIssueRate;
     const ratio = rate / (baseRate || 1);
@@ -457,7 +459,7 @@ export class ProtocolZeroService
 
       const incidentTitle = `GitHub Issue Volume Spike (${ratio.toFixed(1)}x)`;
       const trigger = `Active issues rate: ${rate} compared to baseline hourly average: ${baseRate}.`;
-      this.triggerIncidentFlow(
+      await this.triggerIncidentFlow(
         "Issue Spike",
         incidentTitle,
         trigger,
@@ -469,7 +471,7 @@ export class ProtocolZeroService
   }
 
   // 5. Infrastructure Monitoring
-  private checkInfrastructureMetrics() {
+  private async checkInfrastructureMetrics() {
     const dd = this.enterpriseState.datadog;
     let severity: "low" | "medium" | "high" | "critical" | null = null;
     let trigger = "";
@@ -496,7 +498,7 @@ export class ProtocolZeroService
     }
 
     if (severity) {
-      this.triggerIncidentFlow(
+      await this.triggerIncidentFlow(
         "Infrastructure Monitoring",
         "System Resource Degradation",
         trigger.trim(),
@@ -510,7 +512,7 @@ export class ProtocolZeroService
   }
 
   // 6. Sprint Failure Prediction
-  private checkSprintRisks() {
+  private async checkSprintRisks() {
     for (const sprint of this.enterpriseState.jira.sprints) {
       const daysLeft = Math.max(
         1,
@@ -523,7 +525,7 @@ export class ProtocolZeroService
       if (sprint.storyPointsRemaining > capacity) {
         const incidentTitle = `Sprint Completion Risk: ${sprint.name}`;
         const trigger = `Sprint remaining work (${sprint.storyPointsRemaining} pts) exceeds expected completion capacity (${capacity} pts) with ${daysLeft} days left.`;
-        this.triggerIncidentFlow(
+        await this.triggerIncidentFlow(
           "Sprint Failure Prediction",
           incidentTitle,
           trigger,
@@ -537,7 +539,7 @@ export class ProtocolZeroService
   }
 
   // 7. Feature Incomplete Before Scheduled Meeting
-  private checkFeatureMeetingOverlap() {
+  private async checkFeatureMeetingOverlap() {
     const calendar = this.enterpriseState.calendar;
     const nowMs = Date.now();
     const oneDayMs = 24 * 60 * 60 * 1000;
@@ -561,7 +563,7 @@ export class ProtocolZeroService
           if (lowProgressIssues.length > 0) {
             const incidentTitle = `Incomplete Features for Scheduled ${event.title}`;
             const trigger = `Upcoming ${event.type} meeting '${event.title}' scheduled in 24 hours, but critical feature progress is under 80% (Ticket ${lowProgressIssues[0].ticketId}: ${lowProgressIssues[0].completionProgress}%).`;
-            this.triggerIncidentFlow(
+            await this.triggerIncidentFlow(
               "Feature Incomplete",
               incidentTitle,
               trigger,
@@ -576,7 +578,7 @@ export class ProtocolZeroService
   }
 
   // 8. Deadline Near
-  private checkDeadlineNear() {
+  private async checkDeadlineNear() {
     for (const sprint of this.enterpriseState.jira.sprints) {
       const daysLeft = Math.ceil(
         (new Date(sprint.endDate).getTime() - Date.now()) /
@@ -602,7 +604,7 @@ export class ProtocolZeroService
       }
 
       if (severity) {
-        this.triggerIncidentFlow(
+        await this.triggerIncidentFlow(
           "Deadline Near",
           "Sprint Deadline Risk",
           trigger,
@@ -616,7 +618,7 @@ export class ProtocolZeroService
   }
 
   // 9. Employee Leave
-  private checkEmployeeLeaveRisks() {
+  private async checkEmployeeLeaveRisks() {
     const calendar = this.enterpriseState.calendar;
     const oooEvents = calendar.events.filter((e) => e.type === "ooo");
 
@@ -632,7 +634,7 @@ export class ProtocolZeroService
       if (criticalTask) {
         const incidentTitle = `Resource Absence Risk: ${employee}`;
         const trigger = `${employee} has registered Out Of Office, but is currently assignee for critical ticket ${criticalTask.ticketId}: '${criticalTask.title}'.`;
-        this.triggerIncidentFlow(
+        await this.triggerIncidentFlow(
           "Employee Leave",
           incidentTitle,
           trigger,
@@ -645,7 +647,7 @@ export class ProtocolZeroService
   }
 
   // 10. Employee On Leave But Scheduled Meeting Exists
-  private checkEmployeeLeaveMeetingOverlap() {
+  private async checkEmployeeLeaveMeetingOverlap() {
     const calendar = this.enterpriseState.calendar;
     const oooEvents = calendar.events.filter((e) => e.type === "ooo");
     const standardMeetings = calendar.events.filter((e) => e.type !== "ooo");
@@ -664,7 +666,7 @@ export class ProtocolZeroService
       if (overlapping) {
         const incidentTitle = `Absence Conflict: ${employee} in ${overlapping.title}`;
         const trigger = `${employee} is scheduled for OOO, but has an overlapping meeting '${overlapping.title}'.`;
-        this.triggerIncidentFlow(
+        await this.triggerIncidentFlow(
           "Employee Leave Conflict",
           incidentTitle,
           trigger,
@@ -677,7 +679,7 @@ export class ProtocolZeroService
   }
 
   // Helper to trigger custom simulated incidents manually or via checkers
-  triggerScenario(type: string) {
+  async triggerScenario(type: string) {
     const state = this.enterpriseState;
     const nowStr = now();
 
@@ -820,34 +822,34 @@ export class ProtocolZeroService
     );
     switch (type) {
       case "cicd_failure":
-        this.checkCICDFailures();
+        await this.checkCICDFailures();
         break;
       case "merge_failure":
-        this.checkMergeFailures();
+        await this.checkMergeFailures();
         break;
       case "deployment_failure":
-        this.checkDeploymentFailures();
+        await this.checkDeploymentFailures();
         break;
       case "issue_spike":
-        this.checkIssueSpikes();
+        await this.checkIssueSpikes();
         break;
       case "infra_cpu_spike":
-        this.checkInfrastructureMetrics();
+        await this.checkInfrastructureMetrics();
         break;
       case "sprint_risk":
-        this.checkSprintRisks();
+        await this.checkSprintRisks();
         break;
       case "feature_incomplete":
-        this.checkFeatureMeetingOverlap();
+        await this.checkFeatureMeetingOverlap();
         break;
       case "deadline_near":
-        this.checkDeadlineNear();
+        await this.checkDeadlineNear();
         break;
       case "employee_leave":
-        this.checkEmployeeLeaveRisks();
+        await this.checkEmployeeLeaveRisks();
         break;
       case "ooo_meeting_overlap":
-        this.checkEmployeeLeaveMeetingOverlap();
+        await this.checkEmployeeLeaveMeetingOverlap();
         break;
     }
     return {
@@ -859,7 +861,7 @@ export class ProtocolZeroService
   // ---------------------------------------------------------------------------
   // Multi-Agent reasoning execution (LangGraph Flow)
   // ---------------------------------------------------------------------------
-  private triggerIncidentFlow(
+  private async triggerIncidentFlow(
     category: string,
     title: string,
     trigger: string,
@@ -929,18 +931,16 @@ export class ProtocolZeroService
       logs: [],
     };
 
-    graph
-      .execute(initialState, "Monitoring")
-      .then((finalState) => {
-        const idx = this.incidents.findIndex((i) => i.incidentId === id);
-        if (idx !== -1) {
-          this.incidents[idx] = finalState.incident;
-        }
-        this.recomputeDepartmentHealthScores();
-      })
-      .catch((err) => {
-        console.error(`LangGraph execution failed for ${id}:`, err);
-      });
+    try {
+      const finalState = await graph.execute(initialState, "Monitoring");
+      const idx = this.incidents.findIndex((i) => i.incidentId === id);
+      if (idx !== -1) {
+        this.incidents[idx] = finalState.incident;
+      }
+      this.recomputeDepartmentHealthScores();
+    } catch (err) {
+      console.error(`LangGraph execution failed for ${id}:`, err);
+    }
   }
 
   public logAgentAction(
@@ -1970,7 +1970,6 @@ Provide your executive report:`;
     });
 
     // Inject zero_trust_token for action approvals
-    const crypto = require("crypto");
     const secret = process.env.ZERO_TRUST_SECRET || "default";
     const mappedRecs = recs.map((r) => {
       const token = crypto.createHmac("sha256", secret).update(r.recommendationId).digest("hex");
