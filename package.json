@@ -1,9 +1,9 @@
 {
-  "name": "@nitrostack/protocol-0-copilot",
+  "name": "protocol-0",
   "version": "1.0.0",
   "private": true,
   "type": "module",
-  "description": "Protocol-0: Zero-Trust Enterprise SRE Copilot",
+  "description": "Protocol-0 - Autonomous Enterprise SRE Copilot with Zero-Trust Execution Gate. Amrita MCP Hackathon 2026, Enterprise AI & Workplace Automation track.",
   "scripts": {
     "test": "vitest run",
     "dev": "nitrostack-cli dev",
@@ -12,7 +12,10 @@
     "start:prod": "nitrostack-cli start",
     "upgrade": "nitrostack-cli upgrade",
     "install:all": "nitrostack-cli install",
-    "widget": "npm --prefix src/widgets"
+    "widget": "npm --prefix src/widgets",
+    "test:watch": "vitest",
+    "regress": "tsx scripts/regress.ts",
+    "seed:demo": "tsx scripts/seed-demo.ts"
   },
   "dependencies": {
     "@google/genai": "^2.13.0",
@@ -25,9 +28,10 @@
     "@nitrostack/cli": "^1.0.14",
     "@types/node": "^22.10.0",
     "typescript": "^5.3.3",
-    "vitest": "^4.1.10"
+    "vitest": "^4.1.10",
+    "tsx": "^4.19.2"
   },
-  "author": "",
+  "author": "The Blacklisted - Amrita Vishwa Vidyapeetham Coimbatore",
   "nitrostack": {
     "skillsVersion": "1.0.0"
   }

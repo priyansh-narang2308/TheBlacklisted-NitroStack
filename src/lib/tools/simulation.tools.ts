@@ -1,0 +1,81 @@
+import {
+  ToolDecorator as Tool,
+  Widget,
+  Injectable,
+  ExecutionContext,
+  z,
+} from "@nitrostack/core";
+import { ProtocolZeroService } from "../../modules/protocol-zero.service.js";
+
+@Injectable({ deps: [ProtocolZeroService] })
+export class SimulationTools {
+  constructor(private readonly twin: ProtocolZeroService) {}
+
+  @Tool({
+    name: "triggerIncident",
+    description:
+      "Hackathon Simulator: Trigger one of the 10 supported incident scenarios to observe how the LangGraph multi-agent pipeline reasons and mitigates in real-time.",
+    inputSchema: z.object({
+      incidentType: z
+        .enum([
+          "cicd_failure",
+          "merge_failure",
+          "deployment_failure",
+          "issue_spike",
+          "infra_cpu_spike",
+          "sprint_risk",
+          "feature_incomplete",
+          "deadline_near",
+          "employee_leave",
+          "ooo_meeting_overlap",
+        ])
+        .describe("The specific scenario to simulate."),
+    }),
+  })
+  @Widget("trigger-incident")
+  async triggerIncident(
+    input: { incidentType: string },
+    ctx: ExecutionContext,
+  ) {
+    ctx.logger.info("Simulating scenario trigger", {
+      type: input.incidentType,
+    });
+    return this.twin.triggerScenario(input.incidentType);
+  }
+
+  @Tool({
+    name: "simulate_disaster",
+    description:
+      "What-If Disaster Simulator: Simulate the catastrophic failure of a specific sub-system or cloud region to test auto-remediation and cascading impacts.",
+    inputSchema: z.object({
+      targetNode: z
+        .string()
+        .describe(
+          "The sub-system or region to simulate failure for (e.g., 'eu-west-1', 'auth-service', 'k8s-cluster-1')",
+        ),
+    }),
+  })
+  @Widget("scenario-compare")
+  async simulate_disaster(
+    input: { targetNode: string },
+    ctx: ExecutionContext,
+  ) {
+    ctx.logger.warn(
+      `Triggering What-If Disaster Simulation for ${input.targetNode}`,
+    );
+    return {
+      simulationId: `SIM-${Date.now()}`,
+      targetNode: input.targetNode,
+      cascadingImpact: [
+        `${input.targetNode} is offline.`,
+        `Dependent services starting to queue.`,
+        `Incident Commander Agent calculating blast radius...`,
+      ],
+      estimatedDowntime: "45 minutes",
+      recommendedPreemptiveActions: [
+        "Scale up secondary region capacity",
+        "Enable failover DNS routing",
+      ],
+    };
+  }
+}
