@@ -9,7 +9,7 @@ import { SystemHealthCheck } from "./health/system.health.js";
 @McpApp({
   module: AppModule,
   server: {
-    name: "protocol-0-sre", 
+    name: "protocol-0-SRE", 
     version: "1.0.0",
   },
   logging: {
