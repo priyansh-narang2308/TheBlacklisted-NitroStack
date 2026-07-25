@@ -1,0 +1,20 @@
+[
+  {
+    "audit_id": "AUD-ZERO-8801",
+    "timestamp": "2026-07-24T12:00:15Z",
+    "agent_name": "ActionAgent",
+    "action": "EVALUATE_ZERO_TRUST_PAYLOAD",
+    "status": "GATE_PASSED",
+    "hmac_algorithm": "HMAC-SHA256",
+    "details": "Payload cryptographic signature valid. Execution granted for pod scaling."
+  },
+  {
+    "audit_id": "AUD-ZERO-8802",
+    "timestamp": "2026-07-24T12:14:20Z",
+    "agent_name": "ActionAgent",
+    "action": "EXECUTE_INFRASTRUCTURE_MUTATION",
+    "status": "GATE_BLOCKED",
+    "hmac_algorithm": "HMAC-SHA256",
+    "details": "BLOCKED: Provided HMAC signature does not match server expected key. Unsigned mutation prevented."
+  }
+]

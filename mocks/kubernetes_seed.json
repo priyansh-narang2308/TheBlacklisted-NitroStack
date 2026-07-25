@@ -1,0 +1,29 @@
+{
+  "cluster_name": "prod-eu-west-1-k8s-cluster",
+  "k8s_version": "v1.30.2",
+  "nodes": [
+    { "name": "eu-west-1-k8s-node-1", "status": "Ready", "cpu_allocatable": "16 cores", "memory_allocatable": "64Gi", "pods_running": 42 },
+    { "name": "eu-west-1-k8s-node-2", "status": "Ready", "cpu_allocatable": "16 cores", "memory_allocatable": "64Gi", "pods_running": 38 },
+    { "name": "eu-west-1-k8s-node-3", "status": "Pressure", "cpu_allocatable": "16 cores", "memory_allocatable": "64Gi", "pods_running": 56 }
+  ],
+  "deployments": [
+    {
+      "name": "core-api-deployment",
+      "namespace": "production",
+      "replicas": 12,
+      "ready_replicas": 4,
+      "status": "DEGRADED",
+      "image": "docker.enterprise.internal/core-api:v2.14.0",
+      "readiness_probe": "/healthz (port 8080)"
+    },
+    {
+      "name": "auth-service-deployment",
+      "namespace": "production",
+      "replicas": 6,
+      "ready_replicas": 6,
+      "status": "HEALTHY",
+      "image": "docker.enterprise.internal/auth-service:v1.9.3",
+      "readiness_probe": "/live (port 9090)"
+    }
+  ]
+}
