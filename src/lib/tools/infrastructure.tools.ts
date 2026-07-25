@@ -46,6 +46,7 @@ export class InfrastructureTools {
     description: "Fetches the current live state of the Kubernetes production clusters, identifying failing pods (CrashLoopBackOff, OOMKilled).",
     inputSchema: z.object({}),
   })
+  @Widget("kubernetes-state")
   async getKubernetesState(_input: Record<string, never>, ctx: ExecutionContext) {
     ctx.logger.info("Infrastructure Agent analyzing Kubernetes cluster state...");
     const pods = await this.twin.getKubernetesState();

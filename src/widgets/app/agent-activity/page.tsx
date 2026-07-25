@@ -12,6 +12,7 @@ interface AgentLog {
   durationMs: number;
   status: "success" | "running" | "failed";
   detail: string;
+  incidentId?: string;
 }
 
 interface AgentActivity {
@@ -19,10 +20,17 @@ interface AgentActivity {
   logs: AgentLog[];
 }
 
+const BG = "#0a0d14";
+const CARD = "#121722";
+const BORDER = "#232d42";
+const TEXT = "#f8fafc";
+const MUTED = "#94a3b8";
+const FONT = '"Inter", -apple-system, BlinkMacSystemFont, sans-serif';
+
 const statusColor: Record<string, string> = {
-  success: "#16a34a",
-  running: "#d97706",
-  failed: "#dc2626",
+  success: "#34d399",
+  running: "#fbbf24",
+  failed: "#ef4444",
 };
 
 const MOCK_AGENT_ACTIVITY: AgentActivity = {
@@ -42,6 +50,7 @@ const MOCK_AGENT_ACTIVITY: AgentActivity = {
       status: "success",
       detail:
         "Polled GitHub, Jira, and Datadog. Detected 1 critical alert on Datadog CPU usage.",
+      incidentId: "INC-1001",
     },
     {
       logId: "log-2",
@@ -52,6 +61,7 @@ const MOCK_AGENT_ACTIVITY: AgentActivity = {
       status: "success",
       detail:
         "Analyzed git commit history and deployment logs. Confirmed db schema migrations mismatch.",
+      incidentId: "INC-1001",
     },
     {
       logId: "log-3",
@@ -67,25 +77,25 @@ const MOCK_AGENT_ACTIVITY: AgentActivity = {
 };
 
 export default function AgentActivityWidget() {
-  const theme = useTheme();
+  const theme = themeCustomizerHack();
   const { isReady, getToolOutput } = useWidgetSDK();
   const rawData = getToolOutput<AgentActivity>();
 
-  const isDark = theme === "dark";
-  const bg = "#111111";
-  const cardBg = "#1c1c1c";
-  const text = "#ffffff";
-  const muted = "#888888";
-  const border = "#2a2a2a";
-  const accent = "#ffffff";
+  const bg = BG;
+  const cardBg = CARD;
+  const text = TEXT;
+  const muted = MUTED;
+  const border = BORDER;
+  const accent = "#38bdf8";
 
   const shellStyle: React.CSSProperties = {
     padding: 32,
     textAlign: "center",
     color: text,
     background: bg,
-    borderRadius: 8,
-    fontFamily: "\"Playfair Display\", \"Merriweather\", serif",
+    borderRadius: 16,
+    fontFamily: FONT,
+    border: `1px solid ${border}`,
   };
   if (!isReady) return <div style={shellStyle}>Initializing agents…</div>;
 
@@ -101,17 +111,20 @@ export default function AgentActivityWidget() {
       style={{
         background: bg,
         color: text,
-        padding: 20,
-        borderRadius: 8,
-        fontFamily: "\"Playfair Display\", \"Merriweather\", serif",
+        padding: 24,
+        borderRadius: 16,
+        fontFamily: FONT,
+        border: `1px solid ${border}`,
+        boxShadow: "0 20px 50px rgba(0,0,0,0.5)",
       }}
     >
       <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
         <div
           style={{
-            fontSize: 13,
-            letterSpacing: 0.4,
-            color: muted,
+            fontSize: 10,
+            letterSpacing: "1.2px",
+            color: accent,
+            fontWeight: 800,
             textTransform: "uppercase",
           }}
         >
@@ -125,8 +138,8 @@ export default function AgentActivityWidget() {
               color: "#888888",
               padding: "1px 5px",
               borderRadius: 4,
-                  border: "1px solid #2a2a2a",
-                  fontWeight: 400,
+              border: "1px solid #2a2a2a",
+              fontWeight: 400,
             }}
           >
             MOCK
@@ -136,22 +149,23 @@ export default function AgentActivityWidget() {
       <div
         style={{
           fontSize: 20,
-          fontWeight: 500,
-          marginTop: 2,
+          fontWeight: 800,
+          marginTop: 4,
           marginBottom: 16,
+          letterSpacing: "-0.5px",
         }}
       >
-        Agent Activity
+        Agent Activity Log
       </div>
 
-      {/* Pipeline */}
+      {/* Pipeline Flow representation */}
       <div
         style={{
           display: "flex",
           alignItems: "center",
           flexWrap: "wrap",
           gap: 6,
-          marginBottom: 20,
+          marginBottom: 24,
         }}
       >
         {pipeline.map((agent, i) => (
@@ -162,11 +176,11 @@ export default function AgentActivityWidget() {
             <span
               style={{
                 padding: "6px 12px",
-                borderRadius: 999,
-                background: cardBg,
-                border: `1px solid ${accent}`,
+                borderRadius: 20,
+                background: CARD,
+                border: `1px solid ${border}`,
                 color: text,
-                fontSize: 12,
+                fontSize: 11,
                 fontWeight: 700,
               }}
             >
@@ -179,66 +193,121 @@ export default function AgentActivityWidget() {
         ))}
       </div>
 
-      {/* Logs */}
+      {/* Logs timeline list */}
       <div
         style={{
-          fontSize: 13,
-          fontWeight: 700,
+          fontSize: 10,
+          fontWeight: 800,
           color: muted,
           textTransform: "uppercase",
-          marginBottom: 10,
+          marginBottom: 12,
+          letterSpacing: "1px",
         }}
       >
         Reasoning Log
       </div>
-      <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+      <div
+        style={{
+          display: "flex",
+          flexDirection: "column",
+          gap: 12,
+          maxHeight: 380,
+          overflowY: "auto",
+          paddingRight: 4,
+        }}
+      >
         {logs.map((l) => (
           <div
             key={l.logId}
             style={{
-              background: cardBg,
+              background: CARD,
               border: `1px solid ${border}`,
-              borderRadius: 8,
-              padding: 12,
+              borderRadius: 12,
+              padding: 16,
             }}
           >
-            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                marginBottom: 8,
+                flexWrap: "wrap",
+                gap: 8,
+              }}
+            >
+              <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                <span
+                  style={{
+                    width: 8,
+                    height: 8,
+                    borderRadius: "50%",
+                    background: statusColor[l.status] ?? muted,
+                    flexShrink: 0,
+                  }}
+                />
+                <span style={{ fontSize: 13, fontWeight: 700 }}>{l.agent}</span>
+                {l.incidentId && (
+                  <span
+                    style={{
+                      fontSize: 9,
+                      padding: "1px 6px",
+                      background: "rgba(56, 189, 248, 0.1)",
+                      color: accent,
+                      border: "1px solid rgba(56, 189, 248, 0.3)",
+                      borderRadius: 4,
+                      fontWeight: 600,
+                    }}
+                  >
+                    {l.incidentId}
+                  </span>
+                )}
+              </div>
               <span
                 style={{
-                  width: 8,
-                  height: 8,
-                  borderRadius: "50%",
-                  background: statusColor[l.status] ?? muted,
-                  flexShrink: 0,
-                }}
-              />
-              <span style={{ fontSize: 14, fontWeight: 700 }}>{l.agent}</span>
-              <span
-                style={{
-                  marginLeft: "auto",
                   fontSize: 11,
                   color: muted,
-                  textTransform: "capitalize",
+                  fontWeight: 500,
                 }}
               >
-                {l.status}
-                {l.durationMs > 0 ? ` · ${l.durationMs}ms` : ""}
+                {l.durationMs > 0 ? `${l.durationMs}ms` : ""}
               </span>
             </div>
-            <div style={{ fontSize: 13, marginTop: 6 }}>{l.action}</div>
+            
+            <div style={{ fontSize: 13, fontWeight: 600, color: text, marginBottom: 4 }}>
+              {l.action}
+            </div>
+            
             <div
               style={{
                 fontSize: 12,
                 color: muted,
-                marginTop: 4,
                 lineHeight: 1.4,
+                marginBottom: 8,
               }}
             >
               {l.detail}
+            </div>
+
+            <div
+              style={{
+                textAlign: "right",
+                fontSize: 9,
+                color: muted,
+                borderTop: `1px solid ${border}`,
+                paddingTop: 6,
+                marginTop: 6,
+              }}
+            >
+              {new Date(l.timestamp).toLocaleString()}
             </div>
           </div>
         ))}
       </div>
     </div>
   );
+}
+
+function themeCustomizerHack() {
+  return "dark";
 }

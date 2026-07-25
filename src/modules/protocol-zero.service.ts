@@ -948,8 +948,17 @@ export class ProtocolZeroService
     action: string,
     detail: string,
     durationMs = 150,
+    incidentId?: string,
   ) {
-    const log: AgentLog = {
+    let extractedIncidentId = incidentId;
+    if (!extractedIncidentId) {
+      const match = (action + " " + detail).match(/INC-\d{4}/);
+      if (match) {
+        extractedIncidentId = match[0];
+      }
+    }
+
+    const log: AgentLog & { incidentId?: string } = {
       logId: `LOG-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
       agent,
       timestamp: new Date().toISOString(),
@@ -957,6 +966,7 @@ export class ProtocolZeroService
       durationMs,
       status: "success",
       detail,
+      incidentId: extractedIncidentId,
     };
     this.agentLogs.unshift(log);
   }

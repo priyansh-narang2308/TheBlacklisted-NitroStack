@@ -83,6 +83,7 @@ export class IncidentTools {
     description: "Fetches the active on-call PagerDuty incidents and alerts across all engineering escalation policies.",
     inputSchema: z.object({}),
   })
+  @Widget("pagerduty-incidents")
   async getPagerDutyIncidents(_input: Record<string, never>, ctx: ExecutionContext) {
     ctx.logger.info("Incident Commander checking PagerDuty escalation policies...");
     const incidents = await this.twin.getPagerDutyIncidents();
