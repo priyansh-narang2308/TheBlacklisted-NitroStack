@@ -29,9 +29,16 @@ const SUGGESTIONS = [
   "Check release calendar conflicts",
 ];
 
+const BG = "#0a0d14";
+const CARD = "#121722";
+const BORDER = "#232d42";
+const TEXT = "#f8fafc";
+const MUTED = "#94a3b8";
+const FONT = '"Inter", -apple-system, BlinkMacSystemFont, sans-serif';
+
 export default function ExecutiveChatWidget() {
-  const theme = useTheme();
-  const { isReady, callTool } = useWidgetSDK();
+  const { isReady, getToolOutput, callTool } = useWidgetSDK();
+  const rawData = getToolOutput<ExecutiveResponse>();
 
   const [messages, setMessages] = useState<ChatMessage[]>([
     {
@@ -52,25 +59,39 @@ export default function ExecutiveChatWidget() {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, loading]);
 
-  const bg = "#111111";
-  const cardBg = "#1c1c1c";
-  const text = "#ffffff";
-  const muted = "#888888";
-  const border = "#2a2a2a";
-  const shadow = "none";
-  const backdropFilter = "none";
+  // Sync tool executions from the sidebar directly into the chat
+  const lastProcessedQuestionRef = useRef<string | null>(null);
 
-  const shellStyle: React.CSSProperties = {
-    padding: 32,
-    textAlign: "center",
-    color: text,
-    background: bg,
-    borderRadius: 16,
-    fontFamily: '"Inter", -apple-system, sans-serif',
-  };
+  useEffect(() => {
+    if (rawData && rawData.question && rawData.question !== lastProcessedQuestionRef.current) {
+      lastProcessedQuestionRef.current = rawData.question;
+      
+      const userMsg: ChatMessage = {
+        id: `msg-${Date.now()}-user-sync`,
+        sender: "user",
+        text: rawData.question,
+        timestamp: new Date().toISOString(),
+      };
+      
+      const assistantMsg: ChatMessage = {
+        id: `msg-${Date.now()}-assistant-sync`,
+        sender: "assistant",
+        text: rawData.answer,
+        timestamp: new Date().toISOString(),
+        answeredBy: rawData.answeredBy || "Incident Commander Agent",
+        relatedIncidents: rawData.relatedIncidents || [],
+        mode: "live",
+      };
 
-  if (!isReady)
-    return <div style={shellStyle}>Initializing Executive Copilot Room...</div>;
+      setMessages((prev) => {
+        const exists = prev.some(
+          (m) => m.sender === "user" && m.text === rawData.question
+        );
+        if (exists) return prev;
+        return [...prev, userMsg, assistantMsg];
+      });
+    }
+  }, [rawData]);
 
   const getLocalMockAnswer = (question: string) => {
     const q = question.toLowerCase();
@@ -146,7 +167,7 @@ export default function ExecutiveChatWidget() {
       } catch (err) {
         console.warn(
           "Live tool call failed or running standalone. Falling back to local mock.",
-          err,
+          err
         );
         const mock = getLocalMockAnswer(textToSend);
         result = {
@@ -183,19 +204,42 @@ export default function ExecutiveChatWidget() {
     }
   };
 
+  if (!isReady) {
+    return (
+      <div
+        style={{
+          padding: 48,
+          textAlign: "center",
+          color: TEXT,
+          background: BG,
+          borderRadius: 16,
+          fontFamily: FONT,
+          border: `1px solid ${BORDER}`,
+        }}
+      >
+        <div className="spinner" style={{ marginBottom: 16, margin: "0 auto" }} />
+        <div style={{ fontSize: 15, color: MUTED }}>Initializing Executive Copilot Room...</div>
+        <style>{`
+          @keyframes spin { 100% { transform: rotate(360deg); } }
+          .spinner { width: 32px; height: 32px; border: 3px solid rgba(255,255,255,0.1); border-top-color: #38bdf8; border-radius: 50%; animation: spin 1s linear infinite; }
+        `}</style>
+      </div>
+    );
+  }
+
   return (
     <div
       style={{
-        background: bg,
-        color: text,
+        background: BG,
+        color: TEXT,
         padding: 24,
         borderRadius: 16,
-        fontFamily: '"Inter", -apple-system, sans-serif',
-        border: `1px solid ${border}`,
-        boxShadow: "none",
+        fontFamily: FONT,
+        border: `1px solid ${BORDER}`,
+        boxShadow: "0 20px 50px rgba(0,0,0,0.5)",
         display: "flex",
         flexDirection: "column",
-        height: 520,
+        height: 540,
       }}
     >
       {/* Header */}
@@ -211,9 +255,9 @@ export default function ExecutiveChatWidget() {
         <div>
           <div
             style={{
-              fontSize: 11,
+              fontSize: 10,
               letterSpacing: "1.2px",
-              color: "#ffffff",
+              color: "#38bdf8",
               fontWeight: 800,
               textTransform: "uppercase",
             }}
@@ -225,7 +269,7 @@ export default function ExecutiveChatWidget() {
               fontSize: 20,
               fontWeight: 800,
               marginTop: 4,
-              letterSpacing: "0",
+              letterSpacing: "-0.5px",
             }}
           >
             Strategic Advisory Room
@@ -235,11 +279,11 @@ export default function ExecutiveChatWidget() {
           style={{
             padding: "4px 12px",
             borderRadius: 999,
-            background: "#2a2a2a",
-            color: "#ffffff",
+            background: "#1c2230",
+            color: "#38bdf8",
             fontSize: 10,
             fontWeight: 800,
-            border: "1px solid rgba(99, 102, 241, 0.3)",
+            border: "1px solid rgba(56, 189, 248, 0.3)",
           }}
         >
           LIVE CHAT
@@ -254,7 +298,6 @@ export default function ExecutiveChatWidget() {
           overflowX: "auto",
           paddingBottom: 10,
           flexShrink: 0,
-          flexWrap: "wrap",
         }}
       >
         {SUGGESTIONS.map((s, idx) => (
@@ -265,23 +308,22 @@ export default function ExecutiveChatWidget() {
             style={{
               padding: "6px 12px",
               borderRadius: 20,
-              background: cardBg,
-              border: `1px solid ${border}`,
-              color: text,
+              background: CARD,
+              border: `1px solid ${BORDER}`,
+              color: TEXT,
               fontSize: 11,
               fontWeight: 600,
               cursor: "pointer",
               whiteSpace: "nowrap",
               transition: "all 0.2s",
-              boxShadow: shadow,
             }}
             onMouseOver={(e) => {
-              e.currentTarget.style.borderColor = "#ffffff";
-              e.currentTarget.style.background = "#2a2a2a";
+              e.currentTarget.style.borderColor = "#38bdf8";
+              e.currentTarget.style.background = "#1c2230";
             }}
             onMouseOut={(e) => {
-              e.currentTarget.style.borderColor = border;
-              e.currentTarget.style.background = cardBg;
+              e.currentTarget.style.borderColor = BORDER;
+              e.currentTarget.style.background = CARD;
             }}
           >
             {s}
@@ -299,8 +341,8 @@ export default function ExecutiveChatWidget() {
           flexDirection: "column",
           gap: 14,
           margin: "12px 0",
-          borderTop: `1px solid ${border}`,
-          borderBottom: `1px solid ${border}`,
+          borderTop: `1px solid ${BORDER}`,
+          borderBottom: `1px solid ${BORDER}`,
         }}
       >
         {messages.map((m) => {
@@ -317,15 +359,13 @@ export default function ExecutiveChatWidget() {
               <div
                 style={{
                   maxWidth: "80%",
-                  background: isUser ? "#ffffff" : cardBg,
-                  color: isUser ? "#ffffff" : text,
+                  background: isUser ? "#1c2230" : CARD,
+                  color: TEXT,
                   borderRadius: isUser
                     ? "16px 16px 2px 16px"
                     : "16px 16px 16px 2px",
                   padding: "12px 16px",
-                  border: isUser ? "none" : `1px solid ${border}`,
-                  boxShadow: shadow,
-                  backdropFilter,
+                  border: `1px solid ${isUser ? "#38bdf8" : BORDER}`,
                 }}
               >
                 {!isUser && (
@@ -336,7 +376,7 @@ export default function ExecutiveChatWidget() {
                       alignItems: "center",
                       marginBottom: 6,
                       fontSize: 10,
-                      color: muted,
+                      color: MUTED,
                       fontWeight: 700,
                     }}
                   >
@@ -344,7 +384,7 @@ export default function ExecutiveChatWidget() {
                     {m.mode === "mock" && (
                       <span
                         style={{
-                          background: "#2a2a2a",
+                          background: "#1e1e1e",
                           color: "#888888",
                           padding: "1px 4px",
                           borderRadius: 3,
@@ -357,6 +397,7 @@ export default function ExecutiveChatWidget() {
                     )}
                   </div>
                 )}
+                
                 <div
                   style={{
                     fontSize: 13,
@@ -367,50 +408,46 @@ export default function ExecutiveChatWidget() {
                   {m.text}
                 </div>
 
-                {!isUser &&
-                  m.relatedIncidents &&
-                  m.relatedIncidents.length > 0 && (
-                    <div
-                      style={{
-                        marginTop: 8,
-                        paddingTop: 6,
-                        borderTop: `1px solid ${border}`,
-                        display: "flex",
-                        gap: 6,
-                        alignItems: "center",
-                        flexWrap: "wrap",
-                      }}
-                    >
+                {!isUser && m.relatedIncidents && m.relatedIncidents.length > 0 && (
+                  <div
+                    style={{
+                      marginTop: 8,
+                      paddingTop: 6,
+                      borderTop: `1px solid ${BORDER}`,
+                      display: "flex",
+                      gap: 6,
+                      alignItems: "center",
+                      flexWrap: "wrap",
+                    }}
+                  >
+                    <span style={{ fontSize: 10, color: MUTED, fontWeight: 700 }}>
+                      Incidents:
+                    </span>
+                    {m.relatedIncidents.map((incId) => (
                       <span
-                        style={{ fontSize: 10, color: muted, fontWeight: 700 }}
+                        key={incId}
+                        style={{
+                          fontSize: 9,
+                          padding: "2px 6px",
+                          background: "#1c2230",
+                          color: "#38bdf8",
+                          borderRadius: 4,
+                          border: "1px solid rgba(56, 189, 248, 0.3)",
+                          fontWeight: 500,
+                        }}
                       >
-                        Incidents:
+                        {incId}
                       </span>
-                      {m.relatedIncidents.map((incId) => (
-                        <span
-                          key={incId}
-                          style={{
-                            fontSize: 9,
-                            padding: "2px 6px",
-                            background: "#2a2a2a",
-                            color: "#888888",
-                            borderRadius: 4,
-                  border: "1px solid #2a2a2a",
-                  fontWeight: 400,
-                          }}
-                        >
-                          {incId}
-                        </span>
-                      ))}
-                    </div>
-                  )}
+                    ))}
+                  </div>
+                )}
 
                 <div
                   style={{
                     textAlign: "right",
                     fontSize: 9,
-                    color: isUser ? "rgba(255,255,255,0.7)" : muted,
-                    marginTop: 4,
+                    color: MUTED,
+                    marginTop: 6,
                   }}
                 >
                   {new Date(m.timestamp).toLocaleTimeString([], {
@@ -426,24 +463,23 @@ export default function ExecutiveChatWidget() {
           <div style={{ display: "flex", justifyContent: "flex-start" }}>
             <div
               style={{
-                background: cardBg,
-                color: text,
+                background: CARD,
+                color: TEXT,
                 borderRadius: "16px 16px 16px 2px",
                 padding: "12px 16px",
-                border: `1px solid ${border}`,
-                boxShadow: shadow,
+                border: `1px solid ${BORDER}`,
               }}
             >
               <div
                 style={{
                   fontSize: 13,
-                  color: muted,
+                  color: MUTED,
                   display: "flex",
                   alignItems: "center",
                   gap: 6,
                 }}
               >
-                <span className="animate-pulse" style={{ fontSize: 16 }}>
+                <span className="spinner-dots" style={{ fontSize: 16 }}>
                   ●
                 </span>
                 <span>Executive Agent is formulating report...</span>
@@ -470,12 +506,12 @@ export default function ExecutiveChatWidget() {
           disabled={loading}
           style={{
             flex: 1,
-            background: "#1c1c1c",
-            border: `1px solid ${border}`,
+            background: CARD,
+            border: `1px solid ${BORDER}`,
             borderRadius: 10,
             padding: "12px 16px",
             fontSize: 13,
-            color: text,
+            color: TEXT,
             outline: "none",
           }}
         />
@@ -484,7 +520,7 @@ export default function ExecutiveChatWidget() {
           disabled={loading || !inputValue.trim()}
           style={{
             background: "#ffffff",
-            color: "#fff",
+            color: "#121722",
             border: "none",
             borderRadius: 10,
             padding: "0 20px",

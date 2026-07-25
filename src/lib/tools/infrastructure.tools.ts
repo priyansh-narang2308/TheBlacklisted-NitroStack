@@ -48,6 +48,7 @@ export class InfrastructureTools {
   })
   async getKubernetesState(_input: Record<string, never>, ctx: ExecutionContext) {
     ctx.logger.info("Infrastructure Agent analyzing Kubernetes cluster state...");
-    return this.twin.getKubernetesState();
+    const pods = await this.twin.getKubernetesState();
+    return { pods };
   }
 }

@@ -85,6 +85,7 @@ export class IncidentTools {
   })
   async getPagerDutyIncidents(_input: Record<string, never>, ctx: ExecutionContext) {
     ctx.logger.info("Incident Commander checking PagerDuty escalation policies...");
-    return this.twin.getPagerDutyIncidents();
+    const incidents = await this.twin.getPagerDutyIncidents();
+    return { incidents };
   }
 }
