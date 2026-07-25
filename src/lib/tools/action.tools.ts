@@ -30,21 +30,30 @@ export class ActionTools {
     input: { recommendationId: string; zero_trust_token: string },
     ctx: ExecutionContext,
   ) {
+    console.log(`[ActionTools approveRecommendation] Tool invoked with inputs:`, JSON.stringify(input));
     const secret = process.env.ZERO_TRUST_SECRET;
-    if (!secret) return { error: "ZERO_TRUST_VIOLATION", hint: "Server missing ZERO_TRUST_SECRET configuration." };
+    if (!secret) {
+      console.log(`[ActionTools approveRecommendation] Blocked: Server missing ZERO_TRUST_SECRET.`);
+      return { error: "ZERO_TRUST_VIOLATION", hint: "Server missing ZERO_TRUST_SECRET configuration." };
+    }
     const crypto = await import("crypto");
     const expectedHash = crypto.createHmac("sha256", secret).update(input.recommendationId).digest("hex");
+    console.log(`[ActionTools approveRecommendation] Tokens - expected: "${expectedHash}", received: "${input.zero_trust_token}"`);
     if (input.zero_trust_token !== expectedHash) {
+      console.log(`[ActionTools approveRecommendation] Blocked: Invalid zero_trust_token cryptographic signature.`);
       return { error: "ZERO_TRUST_VIOLATION", hint: "Invalid zero_trust_token cryptographic signature." };
     }
 
     ctx.logger.info("Action Agent approving recommendation", {
       recommendationId: input.recommendationId,
     });
+    console.log(`[ActionTools approveRecommendation] Forwarding to twin.approveAction...`);
     const result = this.twin.approveAction(input.recommendationId, true);
     if (!result.found) {
+      console.log(`[ActionTools approveRecommendation] Error: recommendation not found in twin.`);
       throw new Error(`Recommendation ${input.recommendationId} not found`);
     }
+    console.log(`[ActionTools approveRecommendation] Success! Result:`, JSON.stringify(result));
     return result;
   }
 

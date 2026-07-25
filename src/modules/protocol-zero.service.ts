@@ -330,7 +330,7 @@ export class ProtocolZeroService
       }
 
       const response = await ai.models.generateContent({
-        model: "gemini-2.5-flash",
+        model: "gemini-1.5-flash",
         contents: prompt,
         config,
       });
@@ -1661,6 +1661,12 @@ Provide your executive report:`;
   // Action Approvals & Notifications
   // ---------------------------------------------------------------------------
   approveAction(recommendationId: string, approve: boolean) {
+    console.log(`[Protocol-0 approveAction] approveAction called with ID: "${recommendationId}" (type: ${typeof recommendationId})`);
+    
+    // Print all available recommendations in memory
+    const allIds = this.incidents.flatMap(i => i.recommendations.map(r => r.recommendationId));
+    console.log(`[Protocol-0 approveAction] Available recommendation IDs in memory: ${JSON.stringify(allIds)}`);
+
     let rec: Recommendation | undefined;
     let targetInc: Incident | undefined;
 
@@ -1676,6 +1682,7 @@ Provide your executive report:`;
     }
 
     if (!rec || !targetInc) {
+      console.log(`[Protocol-0 approveAction] Recommendation NOT found in incidents! returning found: false`);
       return { found: false as const };
     }
 
@@ -1729,13 +1736,41 @@ Provide your executive report:`;
     const remainingPending = targetInc.recommendations.some(
       (r) => r.status === "pending",
     );
+    console.log(`[Protocol-0 approveAction] Recommendation approved: ${recommendationId}`);
+    console.log(`[Protocol-0 approveAction] Recommendations status: ${targetInc.recommendations.map(r => `${r.recommendationId}:${r.status}`).join(", ")}`);
+    console.log(`[Protocol-0 approveAction] remainingPending: ${remainingPending}`);
     if (!remainingPending) {
+      console.log(`[Protocol-0 approveAction] Resolving incident ${targetInc.incidentId} and pushing notifications...`);
       targetInc.status = "resolved";
       this.logAgentAction(
         "Monitoring Agent",
         `Incident ${targetInc.incidentId} was fully resolved`,
         `All actions completed successfully.`,
       );
+
+      // Push Slack resolution notification
+      this.notificationLogs.unshift({
+        id: `NOTIFY-SLACK-${Date.now()}`,
+        type: "slack",
+        timestamp: new Date().toISOString(),
+        recipient: "#ops-alerts",
+        subject: `RESOLVED: Incident ${targetInc.incidentId}`,
+        content: `✅ *[Digital Twin Alert]* Incident *${targetInc.incidentId}* ("${targetInc.title}") has been fully resolved. All recommended actions were approved and successfully executed. Subsystem health is recovering.`,
+      });
+
+      // Push Gmail resolution notification
+      this.notificationLogs.unshift({
+        id: `NOTIFY-GMAIL-${Date.now()}`,
+        type: "gmail",
+        timestamp: new Date().toISOString(),
+        recipient: "leadership-team@company.com",
+        subject: `RESOLVED: Protocol-0 Incident Report - ${targetInc.incidentId}`,
+        content: `<h2>Protocol-0 Resolution Report</h2>
+<p><b>Incident ID:</b> ${targetInc.incidentId}<br>
+<b>Status:</b> RESOLVED<br>
+<b>Resolution Time:</b> ${new Date().toISOString()}</p>
+<p>All recommended actions for <b>${targetInc.title}</b> have been executed successfully. Continuous SaaS checks are now passing and metrics are returning to nominal levels.</p>`,
+      });
     }
 
     this.recomputeDepartmentHealthScores();

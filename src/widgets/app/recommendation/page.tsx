@@ -77,6 +77,7 @@ const statusColors: Record<string, { text: string; bg: string; border: string }>
 export default function RecommendationWidget() {
   const { isReady, getToolOutput, callTool } = useWidgetSDK();
   const rawData = getToolOutput<RecommendationsData>();
+  console.log("[Recommendations Widget] rawData:", rawData, "isMock:", !rawData);
 
   const [actionStates, setActionStates] = useState<
     Record<string, { loading: boolean; status?: string; error?: string }>
@@ -130,19 +131,30 @@ export default function RecommendationWidget() {
     }));
 
     if (action === "reject") {
-      setTimeout(() => {
+      try {
+        await callTool("rejectRecommendation", {
+          recommendationId: rec.recommendationId,
+          zero_trust_token: rec.zero_trust_token || "default-token",
+        });
         setActionStates((prev) => ({
           ...prev,
           [rec.recommendationId]: { loading: false, status: "rejected" },
         }));
-      }, 500);
+      } catch (err) {
+        setActionStates((prev) => ({
+          ...prev,
+          [rec.recommendationId]: {
+            loading: false,
+            error: err instanceof Error ? err.message : "Action rejection failed.",
+          },
+        }));
+      }
       return;
     }
 
     try {
-      await callTool("execute_remediation", {
+      await callTool("approveRecommendation", {
         recommendationId: rec.recommendationId,
-        approved: true,
         zero_trust_token: rec.zero_trust_token || "default-token",
       });
       setActionStates((prev) => ({
