@@ -5,9 +5,11 @@ import {
   ExecutionContext,
   z,
   UsePipes,
+  UseGuards,
 } from "@nitrostack/core";
 import { ProtocolZeroService } from "../../modules/protocol-zero.service.js";
 import { ZodValidationPipe } from "../pipes/zod-validation.pipe.js";
+import { ZeroTrustGuard } from "../guards/zero-trust.guard.js";
 
 @Injectable({ deps: [ProtocolZeroService] })
 export class ActionTools {
@@ -23,6 +25,7 @@ export class ActionTools {
     }),
   })
   @UsePipes(ZodValidationPipe)
+  @UseGuards(ZeroTrustGuard)
   async approveRecommendation(
     input: { recommendationId: string; zero_trust_token: string },
     ctx: ExecutionContext,
@@ -54,6 +57,7 @@ export class ActionTools {
       zero_trust_token: z.string().describe("Cryptographic HMAC validation token"),
     }),
   })
+  @UseGuards(ZeroTrustGuard)
   async rejectRecommendation(
     input: { recommendationId: string; zero_trust_token: string },
     ctx: ExecutionContext,
@@ -85,6 +89,7 @@ export class ActionTools {
       zero_trust_token: z.string().describe("Cryptographic HMAC validation token"),
     }),
   })
+  @UseGuards(ZeroTrustGuard)
   async approve_action(
     input: { recommendationId: string; approve?: boolean; zero_trust_token: string },
     ctx: ExecutionContext,
