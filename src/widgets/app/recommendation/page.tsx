@@ -261,7 +261,7 @@ export default function RecommendationWidget() {
               borderColor: activeTab === "active" ? BORDER : "transparent",
             }}
           >
-            ⚠️ Pending Review ({activeRecs.length})
+            [PENDING] Awaiting Review ({activeRecs.length})
           </button>
           <button
             onClick={() => setActiveTab("resolved")}
@@ -272,7 +272,7 @@ export default function RecommendationWidget() {
               borderColor: activeTab === "resolved" ? BORDER : "transparent",
             }}
           >
-            ✓ Executed & Logged ({resolvedRecs.length})
+            [EXECUTED] Logged ({resolvedRecs.length})
           </button>
         </div>
       </div>
@@ -303,11 +303,14 @@ export default function RecommendationWidget() {
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
-                fontSize: 28,
+                fontSize: 18,
+                fontWeight: 700,
+                color: activeTab === "active" ? "#34d399" : MUTED,
+                fontFamily: "monospace",
                 boxShadow: activeTab === "active" ? "0 0 24px rgba(16,185,129,0.25)" : "none",
               }}
             >
-              ✓
+              [OK]
             </div>
             <div style={{ color: activeTab === "active" ? "#34d399" : TEXT, fontWeight: 700, fontSize: 17 }}>
               {activeTab === "active" ? "All Actions Resolved" : "No Executed Actions Yet"}
@@ -406,7 +409,7 @@ export default function RecommendationWidget() {
                     {r.confidence !== undefined && (
                       <div>
                         <div style={{ color: MUTED, fontSize: 10, fontWeight: 700, textTransform: "uppercase", marginBottom: 2 }}>AI Confidence</div>
-                        <div style={{ color: "#34d399", fontWeight: 700, fontSize: 13 }}>✓ {r.confidence}% Match</div>
+                        <div style={{ color: "#34d399", fontWeight: 700, fontSize: 13, fontFamily: "monospace" }}>[VERIFIED] {r.confidence}% Match</div>
                       </div>
                     )}
                     {r.businessImpact && (
@@ -436,9 +439,10 @@ export default function RecommendationWidget() {
                       fontSize: 12,
                       marginBottom: 16,
                       fontWeight: 500,
+                      fontFamily: "monospace",
                     }}
                   >
-                    ⚠️ Execution failed: {state.error}
+                    [ERROR] Execution failed: {state.error}
                   </div>
                 )}
 
@@ -479,9 +483,10 @@ export default function RecommendationWidget() {
                         display: "flex",
                         alignItems: "center",
                         gap: 8,
+                        letterSpacing: "0.5px",
                       }}
                     >
-                      {isExecuting ? "⚡ Executing via MCP..." : `⚡ Approve & Execute via ${r.mcpServer}`}
+                      {isExecuting ? "Executing via MCP..." : `Approve & Execute via ${r.mcpServer}`}
                     </button>
                   </div>
                 )}

@@ -64,13 +64,13 @@ const statusColors: Record<HealthStatus, { text: string; bg: string; border: str
 };
 
 const DEPT_ICONS: Record<string, { icon: string; color: string }> = {
-  engineering: { icon: "💻", color: "#38bdf8" },
-  operations: { icon: "⚙️", color: "#818cf8" },
-  support: { icon: "🎧", color: "#34d399" },
-  hr: { icon: "👥", color: "#f472b6" },
-  finance: { icon: "💰", color: "#fbbf24" },
-  security: { icon: "🛡️", color: "#f87171" },
-  product: { icon: "🚀", color: "#a78bfa" },
+  engineering: { icon: "ENG", color: "#38bdf8" },
+  operations: { icon: "OPS", color: "#818cf8" },
+  support: { icon: "SUP", color: "#34d399" },
+  hr: { icon: "HR", color: "#f472b6" },
+  finance: { icon: "FIN", color: "#fbbf24" },
+  security: { icon: "SEC", color: "#f87171" },
+  product: { icon: "PRD", color: "#a78bfa" },
 };
 
 const MOCK_COMPANY_HEALTH: CompanyHealth = {
@@ -388,8 +388,8 @@ export default function CompanyHealthWidget() {
             <div style={{ fontSize: 11, color: MUTED, textTransform: "uppercase", letterSpacing: "0.5px", marginBottom: 4 }}>Active Incidents</div>
             <div style={{ fontSize: 26, fontWeight: 700, color: data.openIncidents > 0 ? "#f87171" : TEXT }}>{data.openIncidents ?? 0}</div>
           </div>
-          <div style={{ width: 44, height: 44, borderRadius: 10, background: data.openIncidents > 0 ? "rgba(239,68,68,0.15)" : "rgba(255,255,255,0.05)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 22 }}>
-            🛡️
+          <div style={{ width: 44, height: 44, borderRadius: 10, background: data.openIncidents > 0 ? "rgba(239,68,68,0.15)" : "rgba(255,255,255,0.05)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 13, fontWeight: 700, color: data.openIncidents > 0 ? "#f87171" : MUTED, fontFamily: "monospace" }}>
+            [INC]
           </div>
         </div>
 
@@ -409,8 +409,8 @@ export default function CompanyHealthWidget() {
             <div style={{ fontSize: 11, color: MUTED, textTransform: "uppercase", letterSpacing: "0.5px", marginBottom: 4 }}>Critical Risks</div>
             <div style={{ fontSize: 26, fontWeight: 700, color: data.criticalRisks > 0 ? "#fbbf24" : TEXT }}>{data.criticalRisks ?? 0}</div>
           </div>
-          <div style={{ width: 44, height: 44, borderRadius: 10, background: data.criticalRisks > 0 ? "rgba(245,158,11,0.15)" : "rgba(255,255,255,0.05)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 22 }}>
-            ⚠️
+          <div style={{ width: 44, height: 44, borderRadius: 10, background: data.criticalRisks > 0 ? "rgba(245,158,11,0.15)" : "rgba(255,255,255,0.05)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 13, fontWeight: 700, color: data.criticalRisks > 0 ? "#fbbf24" : MUTED, fontFamily: "monospace" }}>
+            [RSK]
           </div>
         </div>
 
@@ -429,8 +429,8 @@ export default function CompanyHealthWidget() {
             <div style={{ fontSize: 11, color: MUTED, textTransform: "uppercase", letterSpacing: "0.5px", marginBottom: 4 }}>Autonomous Agents</div>
             <div style={{ fontSize: 26, fontWeight: 700, color: "#38bdf8" }}>6 Active</div>
           </div>
-          <div style={{ width: 44, height: 44, borderRadius: 10, background: "rgba(56,189,248,0.1)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 22 }}>
-            🤖
+          <div style={{ width: 44, height: 44, borderRadius: 10, background: "rgba(56,189,248,0.1)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 13, fontWeight: 700, color: "#38bdf8", fontFamily: "monospace" }}>
+            [AGN]
           </div>
         </div>
       </div>
@@ -726,10 +726,10 @@ export default function CompanyHealthWidget() {
                         }}
                       >
                         {simulatingPing === active.owningAgent
-                          ? "⚡ Pinging Agent Loop..."
+                          ? "Running Diagnostics..."
                           : pingSuccess === active.owningAgent
-                          ? "✓ Health Verified (12ms)"
-                          : `🔍 Trigger Live Check: ${active.owningAgent}`}
+                          ? "[VERIFIED] Health OK (12ms)"
+                          : `Run Diagnostic: ${active.owningAgent}`}
                       </button>
                     </div>
                   </div>
@@ -749,12 +749,12 @@ export default function CompanyHealthWidget() {
 
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))", gap: 16 }}>
             {[
-              { name: "Kubernetes Production", status: "Connected", ping: "14ms", events: "Pod telemetry & crash loop monitoring", icon: "☸️", color: "#326ce5" },
-              { name: "GitHub Enterprise", status: "Connected", ping: "42ms", events: "PR merge tracking & commit rollbacks", icon: "🐙", color: "#f0f6fc" },
-              { name: "Datadog Telemetry", status: "Connected", ping: "19ms", events: "APM latency, CPU spikes & OOM alerts", icon: "🐶", color: "#6366f1" },
-              { name: "Jira Cloud", status: "Connected", ping: "35ms", events: "Sprint velocity & automated ticket assignment", icon: "📋", color: "#38bdf8" },
-              { name: "Slack Incident Room", status: "Connected", ping: "28ms", events: "Executive notifications & action approvals", icon: "💬", color: "#34d399" },
-              { name: "Google Workspace", status: "Connected", ping: "45ms", events: "OOO calendar syncing & meeting rescheduling", icon: "📅", color: "#fbbf24" },
+              { name: "Kubernetes Production", status: "Connected", ping: "14ms", events: "Pod telemetry & crash loop monitoring", icon: "K8S", color: "#326ce5" },
+              { name: "GitHub Enterprise", status: "Connected", ping: "42ms", events: "PR merge tracking & commit rollbacks", icon: "GH", color: "#f0f6fc" },
+              { name: "Datadog Telemetry", status: "Connected", ping: "19ms", events: "APM latency, CPU spikes & OOM alerts", icon: "DD", color: "#6366f1" },
+              { name: "Jira Cloud", status: "Connected", ping: "35ms", events: "Sprint velocity & automated ticket assignment", icon: "JIRA", color: "#38bdf8" },
+              { name: "Slack Incident Room", status: "Connected", ping: "28ms", events: "Executive notifications & action approvals", icon: "SLK", color: "#34d399" },
+              { name: "Google Workspace", status: "Connected", ping: "45ms", events: "OOO calendar syncing & meeting rescheduling", icon: "CAL", color: "#fbbf24" },
             ].map((mcp) => (
               <div
                 key={mcp.name}
@@ -771,7 +771,7 @@ export default function CompanyHealthWidget() {
               >
                 <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14 }}>
                   <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                    <span style={{ fontSize: 24 }}>{mcp.icon}</span>
+                    <span style={{ fontSize: 13, fontWeight: 700, fontFamily: "monospace", padding: "4px 8px", borderRadius: 6, background: "rgba(255,255,255,0.05)", border: `1px solid ${BORDER}`, color: mcp.color }}>{mcp.icon}</span>
                     <span style={{ fontSize: 15, fontWeight: 600 }}>{mcp.name}</span>
                   </div>
                   <span style={{ fontSize: 11, padding: "2px 8px", borderRadius: 999, background: "rgba(16,185,129,0.1)", color: "#34d399", border: "1px solid rgba(16,185,129,0.3)", fontWeight: 600 }}>

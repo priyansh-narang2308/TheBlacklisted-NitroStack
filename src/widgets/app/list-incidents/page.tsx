@@ -221,7 +221,7 @@ export default function ListIncidentsWidget() {
               borderColor: activeTab === "active" ? BORDER : "transparent",
             }}
           >
-            🛡️ Active ({activeIncidents.length})
+            [OPEN] Active ({activeIncidents.length})
           </button>
           <button
             onClick={() => { setActiveTab("resolved"); setSelectedInc(null); }}
@@ -232,7 +232,7 @@ export default function ListIncidentsWidget() {
               borderColor: activeTab === "resolved" ? BORDER : "transparent",
             }}
           >
-            ✓ Resolved ({resolvedIncidents.length})
+            [CLOSED] Resolved ({resolvedIncidents.length})
           </button>
         </div>
       </div>
@@ -310,11 +310,14 @@ export default function ListIncidentsWidget() {
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
-                fontSize: 28,
+                fontSize: 18,
+                fontWeight: 700,
+                color: "#34d399",
+                fontFamily: "monospace",
                 boxShadow: "0 0 24px rgba(16,185,129,0.25)",
               }}
             >
-              ✓
+              [OK]
             </div>
             <div style={{ color: "#34d399", fontWeight: 700, fontSize: 17 }}>All Systems Operational</div>
             <div style={{ color: MUTED, fontSize: 13, maxWidth: 320, lineHeight: 1.6 }}>
@@ -452,11 +455,11 @@ export default function ListIncidentsWidget() {
                     >
                       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
                         <span style={{ fontSize: 11, fontWeight: 700, color: "#38bdf8", textTransform: "uppercase", letterSpacing: "0.5px" }}>
-                          🤖 AI Incident Commander Diagnosis
+                          [AI-OPS] Incident Commander Diagnosis
                         </span>
                         {inc.confidenceScore && (
-                          <span style={{ fontSize: 11, fontWeight: 600, color: "#34d399" }}>
-                            ✓ {inc.confidenceScore}% Confidence Score
+                          <span style={{ fontSize: 11, fontWeight: 600, color: "#34d399", fontFamily: "monospace" }}>
+                            [VERIFIED] {inc.confidenceScore}% Confidence Score
                           </span>
                         )}
                       </div>

@@ -321,8 +321,8 @@ export default function TriggerIncidentWidget() {
           </div>
         </div>
 
-        <span style={{ fontSize: 12, color: MUTED, background: "#090d14", padding: "6px 14px", borderRadius: 8, border: `1px solid ${BORDER}`, fontWeight: 600 }}>
-          ⚡ {SCENARIOS.length} Chaos Scenarios Loaded
+        <span style={{ fontSize: 11, color: MUTED, background: "#090d14", padding: "6px 14px", borderRadius: 6, border: `1px solid ${BORDER}`, fontWeight: 600, fontFamily: "monospace", letterSpacing: "0.5px" }}>
+          [SYS-OK] {SCENARIOS.length} SCENARIOS ACTIVE
         </span>
       </div>
 
@@ -338,9 +338,10 @@ export default function TriggerIncidentWidget() {
             fontWeight: 600,
             marginBottom: 20,
             animation: "fadeIn 0.2s ease",
+            fontFamily: "monospace",
           }}
         >
-          ⚠️ Execution Error: {error}
+          [ERROR] Execution failed: {error}
         </div>
       )}
 
@@ -460,7 +461,9 @@ export default function TriggerIncidentWidget() {
           </div>
 
           <div style={{ background: "rgba(239, 68, 68, 0.05)", border: "1px dashed rgba(239, 68, 68, 0.3)", borderRadius: 12, padding: 16, textAlign: "center" }}>
-            <div style={{ fontSize: 13, fontWeight: 600, marginBottom: 10, color: "#f87171" }}>Initiate Multi-Agent Incident Loop</div>
+            <div style={{ fontSize: 12, fontWeight: 600, marginBottom: 10, color: "#f87171", textTransform: "uppercase", letterSpacing: "0.5px" }}>
+              Initiate Multi-Agent Incident Loop
+            </div>
             <button
               onClick={handleTrigger}
               disabled={isTriggering}
@@ -471,14 +474,15 @@ export default function TriggerIncidentWidget() {
                 border: "none",
                 padding: "12px 20px",
                 borderRadius: 8,
-                fontSize: 14,
+                fontSize: 13,
                 fontWeight: 700,
                 cursor: isTriggering ? "not-allowed" : "pointer",
                 boxShadow: isTriggering ? "none" : "0 4px 15px rgba(239, 68, 68, 0.35)",
                 transition: "all 0.2s ease",
+                letterSpacing: "0.5px",
               }}
             >
-              {isTriggering ? "⚡ Injecting Chaos Scenario..." : `🔥 Trigger Chaos Scenario: ${activeScenario.name}`}
+              {isTriggering ? "Executing Injection Protocol..." : `Execute Simulation Drill: ${activeScenario.name}`}
             </button>
           </div>
         </div>
@@ -489,7 +493,7 @@ export default function TriggerIncidentWidget() {
         <div style={{ borderTop: `1px solid ${BORDER}`, paddingTop: 20, animation: "fadeIn 0.2s ease" }}>
           <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 12 }}>
             <span style={{ width: 8, height: 8, borderRadius: "50%", background: "#10b981", animation: "pulse 1.5s infinite" }} />
-            <span style={{ fontSize: 13, fontWeight: 700, color: "#34d399", textTransform: "uppercase", letterSpacing: "0.5px" }}>
+            <span style={{ fontSize: 12, fontWeight: 700, color: "#34d399", textTransform: "uppercase", letterSpacing: "0.5px" }}>
               Live Chaos Simulation Feed ({simulationLogs.length})
             </span>
           </div>
@@ -514,8 +518,8 @@ export default function TriggerIncidentWidget() {
                   }}
                 >
                   <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-                    <span style={{ padding: "2px 8px", borderRadius: 4, background: "rgba(16, 185, 129, 0.15)", color: "#34d399", fontSize: 11, fontWeight: 700 }}>
-                      ✓ INJECTED: {matchedScen.name}
+                    <span style={{ padding: "3px 8px", borderRadius: 4, background: "rgba(16, 185, 129, 0.15)", color: "#34d399", fontSize: 11, fontWeight: 700, fontFamily: "monospace" }}>
+                      [INJECTED] {matchedScen.name}
                     </span>
                     <span style={{ fontSize: 13, color: TEXT }}>{log.message}</span>
                   </div>
