@@ -39,6 +39,8 @@ The **Model Context Protocol (MCP)** is an open standard that lets AI assistants
 
 ## Architecture
 
+![Architecture Diagram](./assets/arch.png)
+
 The client is the agent; Protocol-0 is the capability layer. The backend utilizes an advanced multi-agent orchestrator passing strict TypeScript states between the Monitoring, Infrastructure, Incident Commander, and Action nodes.
 
 ```mermaid
