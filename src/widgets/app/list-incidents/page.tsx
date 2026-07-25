@@ -102,7 +102,79 @@ export default function ListIncidentsWidget() {
 
   if (!isReady)
     return (
-      <div style={shellStyle}>Loading active incident command room...</div>
+      <div
+        style={{
+          ...shellStyle,
+          minHeight: 320,
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          justifyContent: "center",
+          gap: 20,
+        }}
+      >
+        {/* Animated radar pulse */}
+        <div style={{ position: "relative", width: 72, height: 72 }}>
+          <div
+            style={{
+              position: "absolute",
+              inset: 0,
+              borderRadius: "50%",
+              border: "2px solid #1e40af",
+              animation: "pulse-ring 1.8s ease-out infinite",
+            }}
+          />
+          <div
+            style={{
+              position: "absolute",
+              inset: 8,
+              borderRadius: "50%",
+              border: "2px solid #3b82f6",
+              animation: "pulse-ring 1.8s ease-out infinite 0.4s",
+            }}
+          />
+          <div
+            style={{
+              position: "absolute",
+              inset: 20,
+              borderRadius: "50%",
+              background: "#1d4ed8",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              fontSize: 18,
+            }}
+          >
+            📡
+          </div>
+        </div>
+        <div style={{ color: "#93c5fd", fontWeight: 600, fontSize: 15, letterSpacing: "0.02em" }}>
+          Incident Command Room
+        </div>
+        <div style={{ color: muted, fontSize: 12, display: "flex", alignItems: "center", gap: 8 }}>
+          <span
+            style={{
+              display: "inline-block",
+              width: 8,
+              height: 8,
+              borderRadius: "50%",
+              background: "#3b82f6",
+              animation: "blink 1.2s ease-in-out infinite",
+            }}
+          />
+          Connecting to live monitoring stream...
+        </div>
+        <style>{`
+          @keyframes pulse-ring {
+            0% { transform: scale(0.8); opacity: 1; }
+            100% { transform: scale(1.6); opacity: 0; }
+          }
+          @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.2; }
+          }
+        `}</style>
+      </div>
     );
 
   const isMock = !toolOutput;
@@ -243,14 +315,56 @@ export default function ListIncidentsWidget() {
               background: cardBg,
               border: `1px solid ${border}`,
               borderRadius: 8,
-              padding: 24,
+              padding: "48px 24px",
               textAlign: "center",
-              color: muted,
-              fontSize: 13,
-              fontWeight: 600,
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              gap: 14,
             }}
           >
-            No active incidents matching the criteria.
+            <div
+              style={{
+                width: 64,
+                height: 64,
+                borderRadius: "50%",
+                background: "linear-gradient(135deg, #052e16 0%, #14532d 100%)",
+                border: "2px solid #16a34a",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                fontSize: 28,
+                boxShadow: "0 0 24px rgba(22,163,74,0.25)",
+              }}
+            >
+              ✓
+            </div>
+            <div style={{ color: "#4ade80", fontWeight: 700, fontSize: 16 }}>
+              All Systems Operational
+            </div>
+            <div style={{ color: muted, fontSize: 12, maxWidth: 280, lineHeight: 1.6 }}>
+              {searchQuery || filterSeverity !== "all"
+                ? "No incidents match your current filters."
+                : "No active incidents detected. Protocol-0 is watching over your infrastructure."}
+            </div>
+            {(searchQuery || filterSeverity !== "all") && (
+              <button
+                onClick={() => { setSearchQuery(""); setFilterSeverity("all"); }}
+                style={{
+                  marginTop: 4,
+                  background: "transparent",
+                  border: `1px solid ${border}`,
+                  color: muted,
+                  borderRadius: 6,
+                  padding: "6px 16px",
+                  fontSize: 11,
+                  cursor: "pointer",
+                  fontWeight: 600,
+                }}
+              >
+                Clear Filters
+              </button>
+            )}
           </div>
         ) : (
           filteredIncidents.map((inc) => {

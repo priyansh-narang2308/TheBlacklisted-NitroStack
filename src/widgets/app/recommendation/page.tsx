@@ -93,11 +93,97 @@ export default function RecommendationWidget() {
   };
 
   if (!isReady)
-    return <div style={shellStyle}>Connecting to decision board...</div>;
+    return (
+      <div
+        style={{
+          ...shellStyle,
+          minHeight: 320,
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          justifyContent: "center",
+          gap: 20,
+        }}
+      >
+        <div style={{ position: "relative", width: 72, height: 72 }}>
+          <div
+            style={{
+              position: "absolute",
+              inset: 0,
+              borderRadius: "50%",
+              border: "2px solid #4f46e5",
+              animation: "pulse-ring 1.8s ease-out infinite",
+            }}
+          />
+          <div
+            style={{
+              position: "absolute",
+              inset: 8,
+              borderRadius: "50%",
+              border: "2px solid #818cf8",
+              animation: "pulse-ring 1.8s ease-out infinite 0.4s",
+            }}
+          />
+          <div
+            style={{
+              position: "absolute",
+              inset: 20,
+              borderRadius: "50%",
+              background: "#4338ca",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              fontSize: 18,
+            }}
+          >
+            ⚡
+          </div>
+        </div>
+        <div style={{ color: "#a5b4fc", fontWeight: 600, fontSize: 15, letterSpacing: "0.02em" }}>
+          Decision Board
+        </div>
+        <div style={{ color: muted, fontSize: 12, display: "flex", alignItems: "center", gap: 8 }}>
+          <span
+            style={{
+              display: "inline-block",
+              width: 8,
+              height: 8,
+              borderRadius: "50%",
+              background: "#818cf8",
+              animation: "blink 1.2s ease-in-out infinite",
+            }}
+          />
+          Loading action recommendations...
+        </div>
+        <style>{`
+          @keyframes pulse-ring {
+            0% { transform: scale(0.8); opacity: 1; }
+            100% { transform: scale(1.6); opacity: 0; }
+          }
+          @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.2; }
+          }
+        `}</style>
+      </div>
+    );
 
   const isMock = !rawData;
   const data = rawData || MOCK_RECOMMENDATIONS;
-  if (!data) return <div style={shellStyle}>Loading recommendations...</div>;
+  if (!data)
+    return (
+      <div
+        style={{
+          ...shellStyle,
+          minHeight: 320,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+        }}
+      >
+        Loading recommendations...
+      </div>
+    );
 
   const recommendations = data.recommendations ?? [];
 
@@ -200,14 +286,36 @@ export default function RecommendationWidget() {
             background: cardBg,
             border: `1px solid ${border}`,
             borderRadius: 8,
-            padding: 24,
+            padding: "48px 24px",
             textAlign: "center",
-            color: muted,
-            fontWeight: 600,
-            boxShadow: shadow,
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            gap: 14,
           }}
         >
-          ✅ All systems optimal. No actions pending approval.
+          <div
+            style={{
+              width: 64,
+              height: 64,
+              borderRadius: "50%",
+              background: "linear-gradient(135deg, #052e16 0%, #14532d 100%)",
+              border: "2px solid #16a34a",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              fontSize: 28,
+              boxShadow: "0 0 24px rgba(22,163,74,0.25)",
+            }}
+          >
+            ✓
+          </div>
+          <div style={{ color: "#4ade80", fontWeight: 700, fontSize: 16 }}>
+            All Actions Resolved
+          </div>
+          <div style={{ color: muted, fontSize: 12, maxWidth: 280, lineHeight: 1.6 }}>
+            No pending recommendations require your approval. The system is fully operational.
+          </div>
         </div>
       ) : (
         <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
