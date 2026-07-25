@@ -68,7 +68,7 @@ export class SimulationTools {
     ctx.logger.warn(
       `Triggering What-If Disaster Simulation for ${input.targetNode}`,
     );
-    this.twin.simulateDisaster(input.targetNode);
+    await this.twin.simulateDisaster(input.targetNode);
 
     if (ctx.task) {
       ctx.task.updateProgress(`Identifying dependencies for ${input.targetNode}...`);

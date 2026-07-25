@@ -27,19 +27,26 @@ export default function SimulateDisasterWidget() {
   const [targetNode, setTargetNode] = useState("auth-db");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [localReport, setLocalReport] = useState<DisasterResponse | null>(null);
 
   const handleSimulate = async () => {
     if (loading) return;
     setLoading(true);
     setError(null);
     try {
-      await callTool("simulate_disaster", { targetNode });
+      const res = await callTool("simulate_disaster", { targetNode }) as any;
+      if (res) {
+        const data = res.structuredContent || res;
+        setLocalReport(data);
+      }
     } catch (err: any) {
       setError(err?.message || "Failed to trigger disaster simulation.");
     } finally {
       setLoading(false);
     }
   };
+
+  const report = localReport || rawData;
 
   if (!isReady) {
     return (
@@ -169,7 +176,7 @@ export default function SimulateDisasterWidget() {
       </div>
 
       {/* Output / Report */}
-      {rawData && (
+      {report && (
         <div
           style={{
             background: "rgba(239, 68, 68, 0.03)",
@@ -180,10 +187,10 @@ export default function SimulateDisasterWidget() {
         >
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
             <span style={{ fontSize: 11, fontWeight: 700, color: "#ef4444", textTransform: "uppercase" }}>
-              Simulation Report: {rawData.simulationId}
+              Simulation Report: {report.simulationId}
             </span>
             <span style={{ fontSize: 11, background: "rgba(239,68,68,0.1)", color: "#ef4444", padding: "2px 8px", borderRadius: 4, fontWeight: 700 }}>
-              EST. DOWNTIME: {rawData.estimatedDowntime}
+              EST. DOWNTIME: {report.estimatedDowntime}
             </span>
           </div>
 
@@ -192,7 +199,7 @@ export default function SimulateDisasterWidget() {
               Cascading Operational Impact:
             </div>
             <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-              {rawData.cascadingImpact.map((impact, idx) => (
+              {report.cascadingImpact.map((impact, idx) => (
                 <div key={idx} style={{ display: "flex", alignItems: "start", gap: 8, fontSize: 12, color: MUTED }}>
                   <span style={{ color: "#ef4444" }}>•</span>
                   <span>{impact}</span>
@@ -206,7 +213,7 @@ export default function SimulateDisasterWidget() {
               Recommended Preemptive Actions:
             </div>
             <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
-              {rawData.recommendedPreemptiveActions.map((action, idx) => (
+              {report.recommendedPreemptiveActions.map((action, idx) => (
                 <span
                   key={idx}
                   style={{

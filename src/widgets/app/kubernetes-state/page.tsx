@@ -37,11 +37,33 @@ const statusColors: Record<string, { text: string; bg: string; border: string }>
 };
 
 export default function KubernetesStateWidget() {
-  const { isReady, getToolOutput } = useWidgetSDK();
+  const { isReady, getToolOutput, callTool } = useWidgetSDK();
   const rawData = getToolOutput<KubernetesData>();
 
   const [searchQuery, setSearchQuery] = useState("");
   const [filterStatus, setFilterStatus] = useState("all");
+  const [localPods, setLocalPods] = useState<PodState[] | null>(null);
+
+  React.useEffect(() => {
+    const fetchPods = async () => {
+      try {
+        const res = await callTool("getKubernetesState", {}) as any;
+        if (res) {
+          const data = res.structuredContent || res;
+          if (data && data.pods) {
+            setLocalPods(data.pods);
+          } else if (Array.isArray(data)) {
+            setLocalPods(data);
+          }
+        }
+      } catch (e) {
+        console.error("Failed to fetch pods:", e);
+      }
+    };
+    if (isReady) {
+      fetchPods();
+    }
+  }, [isReady]);
 
   if (!isReady) {
     return (
@@ -68,7 +90,9 @@ export default function KubernetesStateWidget() {
 
   // Extract pods array robustly
   let pods: PodState[] = [];
-  if (rawData) {
+  if (localPods) {
+    pods = localPods;
+  } else if (rawData) {
     if (Array.isArray(rawData)) {
       pods = rawData;
     } else if (typeof rawData === "object") {

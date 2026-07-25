@@ -951,7 +951,7 @@ export class ProtocolZeroService
     };
   }
 
-  public simulateDisaster(targetNode: string) {
+  public async simulateDisaster(targetNode: string) {
     const node = targetNode.toLowerCase();
     
     this.logAgentAction(
@@ -971,6 +971,16 @@ export class ProtocolZeroService
         p.message = "Node lost connection to SAN database storage; filesystem read-only failover error.";
         p.failedAt = new Date().toISOString();
       }
+      const existing = this.incidents.find((i) => i.status !== "resolved" && i.title === "Database Connection Outage (database-pod-0)");
+      if (!existing) {
+        await this.triggerIncidentFlow(
+          "Infrastructure Monitoring",
+          "Database Connection Outage (database-pod-0)",
+          "Kubernetes Pod database-pod-0 status is Failed: Node lost connection to SAN database storage.",
+          "critical",
+          ["Kubernetes", "Database"]
+        );
+      }
     } else if (node.includes("gateway") || node.includes("auth")) {
       const p = this.kubernetesPods.find((pod) => pod.podName === "auth-service-7cfbc6b-9p8l2");
       if (p) {
@@ -982,6 +992,38 @@ export class ProtocolZeroService
         p.message = "Memory limit of 256Mi exceeded. Process terminated with exit code 137.";
         p.failedAt = new Date().toISOString();
       }
+      const existing = this.incidents.find((i) => i.status !== "resolved" && i.title === "Authentication Gateway OOMKilled");
+      if (!existing) {
+        await this.triggerIncidentFlow(
+          "Infrastructure Monitoring",
+          "Authentication Gateway OOMKilled",
+          "Kubernetes Pod auth-service-7cfbc6b-9p8l2 status is Failed: Memory limit of 256Mi exceeded.",
+          "critical",
+          ["Kubernetes", "Auth"]
+        );
+      }
+    } else if (node.includes("eu-west-1") || node.includes("region") || node.includes("zone")) {
+      this.kubernetesPods.forEach(p => {
+        if (p.podName === "database-pod-0" || p.podName === "gateway-service-84d7cb-mh22a") {
+          p.status = "Failed";
+          p.cpuUsage = "0m";
+          p.memoryUsage = "0Mi";
+          p.restarts = 15;
+          p.reason = "RegionDown";
+          p.message = "AWS eu-west-1 region experiencing elevated API error rates and network partitioning.";
+          p.failedAt = new Date().toISOString();
+        }
+      });
+      const existing = this.incidents.find((i) => i.status !== "resolved" && i.title === "Cloud Region Outage (eu-west-1)");
+      if (!existing) {
+        await this.triggerIncidentFlow(
+          "Infrastructure Monitoring",
+          "Cloud Region Outage (eu-west-1)",
+          "AWS eu-west-1 region has experienced a complete network partition and API blackout.",
+          "critical",
+          ["AWS", "Network"]
+        );
+      }
     } else {
       const p = this.kubernetesPods.find((pod) => pod.podName === "gateway-service-84d7cb-mh22a");
       if (p) {
@@ -992,6 +1034,16 @@ export class ProtocolZeroService
         p.reason = "CrashLoopBackOff";
         p.message = "Container failed: exit status 1. Liveness check failed consecutively.";
         p.failedAt = new Date().toISOString();
+      }
+      const existing = this.incidents.find((i) => i.status !== "resolved" && i.title === "API Gateway CrashLoopBackOff");
+      if (!existing) {
+        await this.triggerIncidentFlow(
+          "Infrastructure Monitoring",
+          "API Gateway CrashLoopBackOff",
+          "Kubernetes Pod gateway-service-84d7cb-mh22a status is Failed: Container failed with exit status 1.",
+          "critical",
+          ["Kubernetes", "Gateway"]
+        );
       }
     }
   }
@@ -1014,7 +1066,7 @@ export class ProtocolZeroService
     if (category === "Merge Failure")       { degradation.cicdScore = 30; }
     if (category === "Deployment Failure")  { degradation.deployScore = 80; degradation.infraScore = 60; }
     if (category === "Issue Spike")         { degradation.issueScore = 60; }
-    if (category === "Infrastructure Spike") { degradation.infraScore = 75; }
+    if (category === "Infrastructure Spike" || category === "Infrastructure Monitoring") { degradation.infraScore = 90; }
     if (category === "Sprint Risk" || category === "Deadline Near") { degradation.sprintScore = 55; }
     if (category === "Feature Incomplete")  { degradation.sprintScore = 40; }
     if (category === "Employee Leave" || category === "OOO Conflict") { degradation.sprintScore = 30; }
@@ -1213,10 +1265,23 @@ Provide your engineering analysis:`;
         confidence = 88;
         summary = "External payment integration degradation.";
       } else if (cat === "Infrastructure Monitoring") {
-        rootCause =
-          "Active memory leak in gateway pod. RAM exceeds 95% triggering horizontal pod eviction.";
-        confidence = 95;
-        summary = "Hardware system degradation identified in Datadog.";
+        if (inc.title.includes("Database")) {
+          rootCause = "Database cluster database-pod-0 lost connection to SAN database storage, forcing read-only file system lock.";
+          confidence = 98;
+          summary = "Critical storage link eviction detected on database-pod-0.";
+        } else if (inc.title.includes("Authentication") || inc.title.includes("Auth")) {
+          rootCause = "Auth Gateway auth-service pod exceeded its memory limit of 256Mi and was terminated by K8s OOMKiller.";
+          confidence = 95;
+          summary = "Out-Of-Memory container termination on auth-service.";
+        } else if (inc.title.includes("Cloud Region") || inc.title.includes("eu-west-1")) {
+          rootCause = "Complete regional routing partition in AWS eu-west-1, causing both ingress gateway and database nodes to become unreachable.";
+          confidence = 99;
+          summary = "Wide-scale AWS region network partition outage.";
+        } else {
+          rootCause = "API Gateway router gateway-service container crashed, failing liveness probes consecutively (exit code 1).";
+          confidence = 95;
+          summary = "Gateway service liveness probe failures.";
+        }
       } else if (cat === "Sprint Failure Prediction") {
         rootCause =
           "Sprint capacity bottleneck. Core developer sick leave decreased velocity to 50%.";
@@ -1461,26 +1526,85 @@ Provide your executive report:`;
           },
         ];
       } else if (cat === "Infrastructure Monitoring") {
-        businessImpact =
-          "Gateway container restart loop causing temporary connection drops.";
-        priority = "high";
-        customerImpact = "warning";
-        approvalRequired = true;
-        recommendations = [
-          {
-            recommendationId: `REC-${Date.now()}-1`,
-            incidentId: inc.incidentId,
-            priority: "high",
-            title: "Scale replicas and restart pods",
-            description:
-              "Increase Gateway deployment replicas and trigger pod rollouts.",
-            mcpServer: "Datadog",
-            status: "pending",
-            confidence: report?.confidence,
-            evidence: report?.rootCause,
-            businessImpact,
-          },
-        ];
+        if (inc.title.includes("Database")) {
+          businessImpact = "Central Database offline. High transactional risk. Customer checkouts disabled.";
+          priority = "high";
+          customerImpact = "critical";
+          revenueRisk = "critical";
+          approvalRequired = true;
+          recommendations = [
+            {
+              recommendationId: `REC-${Date.now()}-1`,
+              incidentId: inc.incidentId,
+              priority: "high",
+              title: "Failover Database to Replica",
+              description: "Promote replica database node database-pod-1 to primary storage engine to recover connection.",
+              mcpServer: "Datadog",
+              status: "pending",
+              confidence: report?.confidence || 95,
+              evidence: report?.rootCause || inc.trigger,
+              businessImpact,
+            }
+          ];
+        } else if (inc.title.includes("Authentication") || inc.title.includes("Auth")) {
+          businessImpact = "Authentication service OOMKilled. Users unable to log in or refresh security tokens.";
+          priority = "high";
+          customerImpact = "critical";
+          approvalRequired = true;
+          recommendations = [
+            {
+              recommendationId: `REC-${Date.now()}-1`,
+              incidentId: inc.incidentId,
+              priority: "high",
+              title: "Restart Auth Pod with Higher Memory Limits",
+              description: "Re-provision auth-service pod with memory limits raised from 256Mi to 512Mi to prevent OOM cycles.",
+              mcpServer: "Datadog",
+              status: "pending",
+              confidence: report?.confidence || 95,
+              evidence: report?.rootCause || inc.trigger,
+              businessImpact,
+            }
+          ];
+        } else if (inc.title.includes("Cloud Region") || inc.title.includes("eu-west-1")) {
+          businessImpact = "AWS eu-west-1 region failure. API Gateway and Database offline simultaneously.";
+          priority = "high";
+          customerImpact = "critical";
+          revenueRisk = "critical";
+          approvalRequired = true;
+          recommendations = [
+            {
+              recommendationId: `REC-${Date.now()}-1`,
+              incidentId: inc.incidentId,
+              priority: "high",
+              title: "Reroute global traffic to secondary region us-east-1",
+              description: "Modify Route53 DNS configurations to redirect all live traffic from failing eu-west-1 region to us-east-1.",
+              mcpServer: "GitHub",
+              status: "pending",
+              confidence: report?.confidence || 95,
+              evidence: report?.rootCause || inc.trigger,
+              businessImpact,
+            }
+          ];
+        } else {
+          businessImpact = "API Gateway router crashed. All microservices unreachable from external public domains.";
+          priority = "high";
+          customerImpact = "critical";
+          approvalRequired = true;
+          recommendations = [
+            {
+              recommendationId: `REC-${Date.now()}-1`,
+              incidentId: inc.incidentId,
+              priority: "high",
+              title: "Redeploy API Gateway router replicas",
+              description: "Scale API Gateway deployment from 1 replica to 3, triggering a rolling restart to resolve probe failures.",
+              mcpServer: "Datadog",
+              status: "pending",
+              confidence: report?.confidence || 95,
+              evidence: report?.rootCause || inc.trigger,
+              businessImpact,
+            }
+          ];
+        }
       } else if (cat === "Sprint Failure Prediction") {
         businessImpact =
           "Feature release deadline at risk. Velocity drops threaten the sprint scope.";
