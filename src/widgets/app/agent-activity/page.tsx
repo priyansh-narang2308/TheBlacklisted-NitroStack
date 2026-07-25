@@ -72,11 +72,11 @@ export default function AgentActivityWidget() {
   const rawData = getToolOutput<AgentActivity>();
 
   const isDark = theme === "dark";
-  const bg = "#060d1f";
-  const cardBg = "#0d1b35";
-  const text = "#e8edf5";
-  const muted = "#5a7299";
-  const border = "#1a2d50";
+  const bg = "#111111";
+  const cardBg = "#1c1c1c";
+  const text = "#ffffff";
+  const muted = "#888888";
+  const border = "#2a2a2a";
   const accent = "#ffffff";
 
   const shellStyle: React.CSSProperties = {

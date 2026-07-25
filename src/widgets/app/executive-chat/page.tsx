@@ -66,8 +66,7 @@ export default function ExecutiveChatWidget() {
     color: text,
     background: bg,
     borderRadius: 16,
-    fontFamily:
-      'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+    fontFamily: '"Inter", -apple-system, sans-serif',
   };
 
   if (!isReady)
@@ -191,10 +190,9 @@ export default function ExecutiveChatWidget() {
         color: text,
         padding: 24,
         borderRadius: 16,
-        fontFamily:
-          'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+        fontFamily: '"Inter", -apple-system, sans-serif',
         border: `1px solid ${border}`,
-        boxShadow: "0 12px 40px rgba(0,0,0,0.15)",
+        boxShadow: "none",
         display: "flex",
         flexDirection: "column",
         height: 520,
@@ -227,7 +225,7 @@ export default function ExecutiveChatWidget() {
               fontSize: 20,
               fontWeight: 800,
               marginTop: 4,
-              letterSpacing: "-0.5px",
+              letterSpacing: "0",
             }}
           >
             Strategic Advisory Room
@@ -397,7 +395,8 @@ export default function ExecutiveChatWidget() {
                             background: "#2a2a2a",
                             color: "#888888",
                             borderRadius: 4,
-                            fontWeight: 500,
+                  border: "1px solid #2a2a2a",
+                  fontWeight: 400,
                           }}
                         >
                           {incId}

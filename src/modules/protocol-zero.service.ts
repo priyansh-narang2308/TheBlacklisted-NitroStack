@@ -1898,8 +1898,17 @@ Provide your executive report:`;
         )
       : this.incidents;
     const recs = source.flatMap((i) => i.recommendations);
+    
+    // Inject zero_trust_token for action approvals
+    const crypto = require("crypto");
+    const secret = process.env.ZERO_TRUST_SECRET || "default";
+    const mappedRecs = recs.map((r) => {
+      const token = crypto.createHmac("sha256", secret).update(r.recommendationId).digest("hex");
+      return { ...r, zero_trust_token: token };
+    });
+
     const order: Record<string, number> = { high: 0, medium: 1, low: 2 };
-    return recs.sort((a, b) => order[a.priority] - order[b.priority]);
+    return mappedRecs.sort((a, b) => order[a.priority] - order[b.priority]);
   }
 
   getAgentActivity() {

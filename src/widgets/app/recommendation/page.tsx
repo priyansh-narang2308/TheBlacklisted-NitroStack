@@ -22,6 +22,7 @@ interface Recommendation {
   evidence?: string;
   confidence?: number;
   businessImpact?: string;
+  zero_trust_token?: string;
 }
 
 interface RecommendationsData {
@@ -74,12 +75,12 @@ export default function RecommendationWidget() {
   >({});
 
   const isDark = theme === "dark";
-  const bg = "#060d1f";
-  const cardBg = "#0d1b35";
-  const text = "#e8edf5";
-  const muted = "#5a7299";
-  const border = "#1a2d50";
-  const shadow = "0 2px 12px rgba(0,0,0,0.4)";
+  const bg = "#111111";
+  const cardBg = "#1c1c1c";
+  const text = "#ffffff";
+  const muted = "#888888";
+  const border = "#2a2a2a";
+  const shadow = "none";
   const backdropFilter = "none";
 
   const shellStyle: React.CSSProperties = {
@@ -100,7 +101,7 @@ export default function RecommendationWidget() {
 
   const recommendations = data.recommendations ?? [];
 
-  const handleAction = async (recommendationId: string, approve: boolean) => {
+  const handleAction = async (recommendationId: string, approve: boolean, token?: string) => {
     setActionStates((prev) => ({
       ...prev,
       [recommendationId]: { loading: true },
@@ -113,7 +114,7 @@ export default function RecommendationWidget() {
         const toolName = approve
           ? "approveRecommendation"
           : "rejectRecommendation";
-        await callTool(toolName, { recommendationId });
+        await callTool(toolName, { recommendationId, zero_trust_token: token });
       }
 
       setActionStates((prev) => ({
@@ -343,7 +344,7 @@ export default function RecommendationWidget() {
                     }}
                   >
                     <button
-                      onClick={() => handleAction(r.recommendationId, true)}
+                      onClick={() => handleAction(r.recommendationId, true, r.zero_trust_token)}
                       disabled={state.loading}
                       style={{
                         background: "#10b981",
@@ -363,7 +364,7 @@ export default function RecommendationWidget() {
                       {state.loading ? "Executing..." : "Approve & Execute"}
                     </button>
                     <button
-                      onClick={() => handleAction(r.recommendationId, false)}
+                      onClick={() => handleAction(r.recommendationId, false, r.zero_trust_token)}
                       disabled={state.loading}
                       style={{
                         background: "none",

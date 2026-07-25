@@ -134,12 +134,12 @@ export default function IncidentDetailWidget() {
   const data = getToolOutput<Incident>();
 
   const isDark = theme === "dark";
-  const bg = "#060d1f";
-  const cardBg = "#0d1b35";
-  const text = "#e8edf5";
-  const muted = "#5a7299";
-  const border = "#1a2d50";
-  const shadow = "0 2px 12px rgba(0,0,0,0.4)";
+  const bg = "#111111";
+  const cardBg = "#1c1c1c";
+  const text = "#ffffff";
+  const muted = "#888888";
+  const border = "#2a2a2a";
+  const shadow = "none";
   const backdropFilter = "none";
 
   const shellStyle: React.CSSProperties = {
