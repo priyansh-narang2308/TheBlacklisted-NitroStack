@@ -1423,6 +1423,7 @@ Provide your executive report:`;
     );
 
     return {
+      incident: inc,
       executiveReport: {
         businessImpact,
         recommendations,
@@ -1897,8 +1898,37 @@ Provide your executive report:`;
           (i) => i.incidentId.toLowerCase() === incidentId.toLowerCase(),
         )
       : this.incidents;
-    const recs = source.flatMap((i) => i.recommendations);
-    
+    const recs = source.flatMap((i) => {
+      // If the incident has recommendations, return them as-is
+      if (i.recommendations.length > 0) return i.recommendations;
+
+      // If the incident is still being analyzed (pipeline not yet done), surface a
+      // synthetic "processing" entry so the UI can show meaningful feedback
+      const isPipelineRunning =
+        i.status === "detected" ||
+        i.status === "investigating" ||
+        i.status === "analyzed";
+
+      if (isPipelineRunning) {
+        return [
+          {
+            recommendationId: `PROCESSING-${i.incidentId}`,
+            incidentId: i.incidentId,
+            priority: "high" as const,
+            title: "⏳ AI Agents Analyzing Incident",
+            description: `The multi-agent pipeline (Monitoring → Engineering → Incident Commander) is currently analyzing ${i.incidentId}: "${i.title}". Recommendations will appear here once analysis is complete. Please call getRecommendations again in a few seconds.`,
+            mcpServer: "Protocol-0",
+            status: "pending" as const,
+            confidence: 0,
+            evidence: i.trigger,
+            businessImpact: "Under analysis by Incident Commander Agent.",
+          },
+        ];
+      }
+
+      return [];
+    });
+
     // Inject zero_trust_token for action approvals
     const crypto = require("crypto");
     const secret = process.env.ZERO_TRUST_SECRET || "default";

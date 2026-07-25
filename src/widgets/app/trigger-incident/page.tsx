@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useTheme, useWidgetSDK } from "@nitrostack/widgets";
 
 export const dynamic = "force-dynamic";
@@ -135,14 +135,7 @@ export default function TriggerIncidentWidget() {
       message: string;
       mode: "live" | "mock";
     }>
-  >([
-    {
-      timestamp: new Date(Date.now() - 300000).toISOString(),
-      scenario: "deployment_failure",
-      message: "Scenario deployment_failure triggered and processed by agents.",
-      mode: "mock",
-    },
-  ]);
+  >([]);
 
   const isDark = theme === "dark";
   const bg = "#111111";
@@ -162,8 +155,57 @@ export default function TriggerIncidentWidget() {
     fontFamily: '"Inter", -apple-system, sans-serif',
   };
 
+  // Sync widget selection with whatever scenario was triggered via left-panel dropdown
+  // NOTE: must be declared BEFORE any early returns to comply with Rules of Hooks
+  useEffect(() => {
+    if (toolOutput?.message) {
+      const match = SCENARIOS.find((s) => toolOutput.message.includes(s.id));
+      if (match) {
+        setSelectedScenario(match.id);
+        setSimulationLogs((prev) => {
+          const alreadyLogged = prev.some(
+            (l) => l.scenario === match.id && Date.now() - new Date(l.timestamp).getTime() < 5000
+          );
+          if (alreadyLogged) return prev;
+          return [
+            { timestamp: new Date().toISOString(), scenario: match.id, message: toolOutput.message, mode: "live" as const },
+            ...prev,
+          ];
+        });
+      }
+    }
+  }, [toolOutput]);
+
   if (!isReady)
-    return <div style={shellStyle}>Connecting to simulation console...</div>;
+    return (
+      <div
+        style={{
+          ...shellStyle,
+          minHeight: 320,
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          justifyContent: "center",
+          gap: 20,
+        }}
+      >
+        <div style={{ position: "relative", width: 72, height: 72 }}>
+          <div style={{ position: "absolute", inset: 0, borderRadius: "50%", border: "2px solid #b45309", animation: "pulse-ring 1.8s ease-out infinite" }} />
+          <div style={{ position: "absolute", inset: 8, borderRadius: "50%", border: "2px solid #f59e0b", animation: "pulse-ring 1.8s ease-out infinite 0.4s" }} />
+          <div style={{ position: "absolute", inset: 20, borderRadius: "50%", background: "#d97706", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18 }}>⚠️</div>
+        </div>
+        <div style={{ color: "#fcd34d", fontWeight: 600, fontSize: 15, letterSpacing: "0.02em" }}>Incident Simulator</div>
+        <div style={{ color: muted, fontSize: 12, display: "flex", alignItems: "center", gap: 8 }}>
+          <span style={{ display: "inline-block", width: 8, height: 8, borderRadius: "50%", background: "#f59e0b", animation: "blink 1.2s ease-in-out infinite" }} />
+          Connecting to simulation console...
+        </div>
+        <style>{`
+          @keyframes pulse-ring { 0% { transform: scale(0.8); opacity: 1; } 100% { transform: scale(1.6); opacity: 0; } }
+          @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.2; } }
+        `}</style>
+      </div>
+    );
+
 
   const triggerSimulation = async () => {
     setLoading(true);

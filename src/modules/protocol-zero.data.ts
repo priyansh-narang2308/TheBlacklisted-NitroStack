@@ -242,14 +242,7 @@ export const initialEnterpriseState: EnterpriseState = {
         createdAt: hoursAgo(12),
       },
     ],
-    issues: [
-      {
-        id: "issue-1",
-        title: "Dark mode contrast adjustment",
-        timestamp: hoursAgo(5),
-      },
-      { id: "issue-2", title: "Typo in footer links", timestamp: hoursAgo(2) },
-    ],
+    issues: [],
     averageIssueRate: 1.2, // 1.2 issues per hour
   },
   datadog: {
