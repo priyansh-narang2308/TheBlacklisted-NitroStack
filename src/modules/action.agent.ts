@@ -21,7 +21,9 @@ export class ActionAgent {
     // -------------------------------------------------------------------------
     const secret = process.env.ZERO_TRUST_SECRET;
     if (!secret) {
-      throw new Error("Zero-Trust Gate Check Failed: Server missing ZERO_TRUST_SECRET configuration.");
+      throw new Error(
+        "Zero-Trust Gate Check Failed: Server missing ZERO_TRUST_SECRET configuration.",
+      );
     }
 
     const payload = JSON.stringify(state.incident.recommendations);

@@ -22,10 +22,6 @@ const now = () => new Date().toISOString();
 const daysFromNow = (d: number) =>
   new Date(Date.now() + d * 24 * 60 * 60 * 1000).toISOString();
 
-// ---------------------------------------------------------------------------
-// Lightweight StateGraph Engine (LangGraph-like Node & Edge Orchestrator)
-// ---------------------------------------------------------------------------
-
 import { StateGraph } from "./state-graph.engine.js";
 import { AgentState, NotificationLog } from "./protocol-zero.types.js";
 @Injectable()

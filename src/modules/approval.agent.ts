@@ -15,7 +15,6 @@ export class ApprovalAgent {
       "Pausing execution pipeline...",
     );
 
-    // Generate notifications
     await this.service.sendSimulatedSlackNotification(state.incident);
     this.service.sendSimulatedGmailNotification(state.incident);
 
