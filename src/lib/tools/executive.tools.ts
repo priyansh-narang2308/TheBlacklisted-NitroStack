@@ -38,7 +38,8 @@ export class ExecutiveTools {
   @RateLimit({ requests: 5, window: '1m' })
   async executiveChat(input: { question: string }, ctx: ExecutionContext) {
     ctx.logger.info("Executive Copilot query", { question: input.question });
-    return this.twin.answerExecutiveQuery(input.question);
+    const response = await this.twin.answerExecutiveQuery(input.question);
+    return response;
   }
 
   @Tool({

@@ -164,6 +164,9 @@ export default function ExecutiveChatWidget() {
         result = (await callTool("executiveChat", {
           question: textToSend,
         })) as unknown as ExecutiveResponse;
+        if (!result || !result.answer) {
+          throw new Error("Empty response payload received from executiveChat tool");
+        }
       } catch (err) {
         console.warn(
           "Live tool call failed or running standalone. Falling back to local mock.",
