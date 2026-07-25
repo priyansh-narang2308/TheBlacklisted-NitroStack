@@ -1,5 +1,5 @@
 {
-  "name": "calculator-widgets",
+  "name": "protocol-zero-widgets",
   "version": "1.0.0",
   "type": "module",
   "private": true,
@@ -10,16 +10,26 @@
   },
   "dependencies": {
     "@modelcontextprotocol/ext-apps": ">=0.1.0",
-    "@nitrostack/core": "^1.0.14",
-    "@nitrostack/widgets": "^1",
+    "@nitrostack/core": "^1.0.13",
+    "@nitrostack/widgets": "^1.0.8",
+    "@radix-ui/react-slot": "^1.2.4",
+    "@tailwindcss/postcss": "^4.3.3",
+    "class-variance-authority": "^0.7.1",
+    "clsx": "^2.1.0",
+    "lucide-react": "^0.460.0",
     "next": "^14.2.5",
     "react": "^18.3.1",
-    "react-dom": "^18.3.1"
+    "react-dom": "^18.3.1",
+    "tailwind-merge": "^2.5.4",
+    "tailwindcss-animate": "^1.0.7"
   },
   "devDependencies": {
     "@types/node": "^20",
     "@types/react": "^18",
     "@types/react-dom": "^18",
+    "autoprefixer": "^10.5.4",
+    "postcss": "^8.5.22",
+    "tailwindcss": "^4.3.3",
     "typescript": "^5"
   }
 }
