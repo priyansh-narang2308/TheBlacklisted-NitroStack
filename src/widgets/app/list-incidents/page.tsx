@@ -70,7 +70,7 @@ const severityColors: Record<string, string> = {
   critical: "#ef4444",
   high: "#f97316",
   medium: "#f59e0b",
-  low: "#3b82f6",
+  low: "#ffffff",
 };
 
 export default function ListIncidentsWidget() {
@@ -83,26 +83,21 @@ export default function ListIncidentsWidget() {
   const [selectedInc, setSelectedInc] = useState<string | null>(null);
 
   const isDark = theme === "dark";
-  const bg = isDark
-    ? "radial-gradient(circle at top left, #0f172a, #020617)"
-    : "#f8fafc";
-  const cardBg = isDark ? "rgba(30, 41, 59, 0.7)" : "#ffffff";
-  const text = isDark ? "#f8fafc" : "#0f172a";
-  const muted = isDark ? "#94a3b8" : "#64748b";
-  const border = isDark ? "rgba(51, 65, 85, 0.5)" : "#e2e8f0";
-  const shadow = isDark
-    ? "0 8px 32px 0 rgba(0, 0, 0, 0.3)"
-    : "0 4px 12px rgba(0, 0, 0, 0.05)";
-  const backdropFilter = isDark ? "blur(8px)" : "none";
+  const bg = "#060d1f";
+  const cardBg = "#0d1b35";
+  const text = "#e8edf5";
+  const muted = "#5a7299";
+  const border = "#1a2d50";
+  const shadow = "0 2px 12px rgba(0,0,0,0.4)";
+  const backdropFilter = "none";
 
   const shellStyle: React.CSSProperties = {
     padding: 32,
     textAlign: "center",
     color: text,
     background: bg,
-    borderRadius: 16,
-    fontFamily:
-      'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+    borderRadius: 8,
+    fontFamily: '"Inter", -apple-system, sans-serif',
   };
 
   if (!isReady)
@@ -130,11 +125,10 @@ export default function ListIncidentsWidget() {
         background: bg,
         color: text,
         padding: 24,
-        borderRadius: 16,
-        fontFamily:
-          'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+        borderRadius: 8,
+        fontFamily: '"Inter", -apple-system, sans-serif',
         border: `1px solid ${border}`,
-        boxShadow: "0 12px 40px rgba(0,0,0,0.15)",
+        boxShadow: "none",
       }}
     >
       {/* Header */}
@@ -153,9 +147,9 @@ export default function ListIncidentsWidget() {
             <span
               style={{
                 fontSize: 11,
-                letterSpacing: "1.2px",
-                color: "#6366f1",
-                fontWeight: 800,
+                letterSpacing: "0.5px",
+                color: "#ffffff",
+                fontWeight: 500,
                 textTransform: "uppercase",
               }}
             >
@@ -165,11 +159,12 @@ export default function ListIncidentsWidget() {
               <span
                 style={{
                   fontSize: 9,
-                  background: isDark ? "rgba(245,158,11,0.15)" : "#fef3c7",
-                  color: "#d97706",
+                  background: "#1c1c1c",
+                  color: "#888888",
                   padding: "1px 5px",
                   borderRadius: 4,
-                  fontWeight: 800,
+                  border: "1px solid #2a2a2a",
+                  fontWeight: 400,
                 }}
               >
                 MOCK
@@ -179,9 +174,9 @@ export default function ListIncidentsWidget() {
           <div
             style={{
               fontSize: 22,
-              fontWeight: 800,
+              fontWeight: 500,
               marginTop: 4,
-              letterSpacing: "-0.5px",
+              letterSpacing: "0",
             }}
           >
             Active Incidents Feed
@@ -195,9 +190,9 @@ export default function ListIncidentsWidget() {
               style={{
                 padding: "4px 10px",
                 borderRadius: 6,
-                background: filterSeverity === sev ? "#6366f1" : cardBg,
+                background: filterSeverity === sev ? "#ffffff" : cardBg,
                 color: filterSeverity === sev ? "#fff" : text,
-                border: `1px solid ${filterSeverity === sev ? "#6366f1" : border}`,
+                border: `1px solid ${filterSeverity === sev ? "#ffffff" : border}`,
                 fontSize: 11,
                 fontWeight: 700,
                 cursor: "pointer",
@@ -247,7 +242,7 @@ export default function ListIncidentsWidget() {
             style={{
               background: cardBg,
               border: `1px solid ${border}`,
-              borderRadius: 12,
+              borderRadius: 8,
               padding: 24,
               textAlign: "center",
               color: muted,
@@ -267,7 +262,7 @@ export default function ListIncidentsWidget() {
                   background: cardBg,
                   border: `1px solid ${border}`,
                   borderLeft: `4px solid ${severityColors[inc.severity] || border}`,
-                  borderRadius: 10,
+                  borderRadius: 8,
                   overflow: "hidden",
                   boxShadow: shadow,
                 }}
@@ -302,13 +297,13 @@ export default function ListIncidentsWidget() {
                         background: severityColors[inc.severity],
                         color: "#fff",
                         fontSize: 9,
-                        fontWeight: 900,
+                        fontWeight: 600,
                         textTransform: "uppercase",
                       }}
                     >
                       {inc.severity}
                     </span>
-                    <span style={{ fontSize: 13, fontWeight: 800 }}>
+                    <span style={{ fontSize: 13, fontWeight: 500 }}>
                       {inc.incidentId} : {inc.title}
                     </span>
                   </div>
@@ -417,7 +412,7 @@ export default function ListIncidentsWidget() {
                         <span
                           style={{
                             fontSize: 11,
-                            fontWeight: 800,
+                            fontWeight: 500,
                             color: muted,
                             textTransform: "uppercase",
                           }}
@@ -427,7 +422,7 @@ export default function ListIncidentsWidget() {
                         <span
                           style={{
                             fontSize: 11,
-                            fontWeight: 800,
+                            fontWeight: 500,
                             color: "#10b981",
                           }}
                         >

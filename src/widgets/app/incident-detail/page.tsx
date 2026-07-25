@@ -53,13 +53,13 @@ const severityColor: Record<string, string> = {
   critical: "#ef4444",
   high: "#f97316",
   medium: "#f59e0b",
-  low: "#3b82f6",
+  low: "#ffffff",
 };
 
 const priorityColor: Record<string, string> = {
   high: "#ef4444",
   medium: "#f59e0b",
-  low: "#3b82f6",
+  low: "#ffffff",
 };
 
 const riskColor: Record<string, string> = {
@@ -134,26 +134,21 @@ export default function IncidentDetailWidget() {
   const data = getToolOutput<Incident>();
 
   const isDark = theme === "dark";
-  const bg = isDark
-    ? "radial-gradient(circle at top left, #0f172a, #020617)"
-    : "#f8fafc";
-  const cardBg = isDark ? "rgba(30, 41, 59, 0.7)" : "#ffffff";
-  const text = isDark ? "#f8fafc" : "#0f172a";
-  const muted = isDark ? "#94a3b8" : "#64748b";
-  const border = isDark ? "rgba(51, 65, 85, 0.5)" : "#e2e8f0";
-  const shadow = isDark
-    ? "0 8px 32px 0 rgba(0, 0, 0, 0.3)"
-    : "0 4px 12px rgba(0, 0, 0, 0.05)";
-  const backdropFilter = isDark ? "blur(8px)" : "none";
+  const bg = "#060d1f";
+  const cardBg = "#0d1b35";
+  const text = "#e8edf5";
+  const muted = "#5a7299";
+  const border = "#1a2d50";
+  const shadow = "0 2px 12px rgba(0,0,0,0.4)";
+  const backdropFilter = "none";
 
   const shellStyle: React.CSSProperties = {
     padding: 32,
     textAlign: "center",
     color: text,
     background: bg,
-    borderRadius: 16,
-    fontFamily:
-      'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+    borderRadius: 8,
+    fontFamily: '"Inter", -apple-system, sans-serif',
   };
 
   if (!isReady)
@@ -204,11 +199,10 @@ export default function IncidentDetailWidget() {
         background: bg,
         color: text,
         padding: 24,
-        borderRadius: 16,
-        fontFamily:
-          'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+        borderRadius: 8,
+        fontFamily: '"Inter", -apple-system, sans-serif',
         border: `1px solid ${border}`,
-        boxShadow: "0 12px 40px rgba(0,0,0,0.15)",
+        boxShadow: "none",
       }}
     >
       {/* Header */}
@@ -238,7 +232,7 @@ export default function IncidentDetailWidget() {
                 background: severityColor[severity],
                 color: "#fff",
                 fontSize: 10,
-                fontWeight: 800,
+                fontWeight: 500,
                 textTransform: "uppercase",
               }}
             >
@@ -251,11 +245,12 @@ export default function IncidentDetailWidget() {
                   style={{
                     marginLeft: 6,
                     fontSize: 9,
-                    background: isDark ? "rgba(245,158,11,0.15)" : "#fef3c7",
-                    color: "#d97706",
+                    background: "#1c1c1c",
+                    color: "#888888",
                     padding: "1px 5px",
                     borderRadius: 4,
-                    fontWeight: 800,
+                  border: "1px solid #2a2a2a",
+                  fontWeight: 400,
                   }}
                 >
                   MOCK
@@ -266,9 +261,9 @@ export default function IncidentDetailWidget() {
           <div
             style={{
               fontSize: 22,
-              fontWeight: 800,
+              fontWeight: 500,
               marginTop: 6,
-              letterSpacing: "-0.5px",
+              letterSpacing: "0",
             }}
           >
             {incident.title}
@@ -278,10 +273,10 @@ export default function IncidentDetailWidget() {
           style={{
             padding: "4px 12px",
             borderRadius: 999,
-            background: isDark ? "rgba(99, 102, 241, 0.15)" : "#e0e7ff",
-            color: "#6366f1",
+            background: isDark ? "#1c1c1c" : "#1c1c1c",
+            color: "#ffffff",
             fontSize: 11,
-            fontWeight: 800,
+            fontWeight: 500,
             border: "1px solid rgba(99, 102, 241, 0.3)",
             textTransform: "uppercase",
           }}
@@ -306,7 +301,7 @@ export default function IncidentDetailWidget() {
             background: cardBg,
             border: `1px solid ${border}`,
             borderLeft: `4px solid ${severityColor[severity]}`,
-            borderRadius: 12,
+            borderRadius: 8,
             padding: 18,
             boxShadow: shadow,
             backdropFilter,
@@ -323,14 +318,14 @@ export default function IncidentDetailWidget() {
             <span
               style={{
                 fontSize: 12,
-                fontWeight: 800,
+                fontWeight: 500,
                 color: muted,
                 textTransform: "uppercase",
               }}
             >
               Root Cause · Engineering Agent
             </span>
-            <span style={{ fontSize: 12, fontWeight: 800, color: "#10b981" }}>
+            <span style={{ fontSize: 12, fontWeight: 500, color: "#10b981" }}>
               {incident.confidenceScore ?? 0}% confidence
             </span>
           </div>
@@ -373,7 +368,7 @@ export default function IncidentDetailWidget() {
           style={{
             background: cardBg,
             border: `1px solid ${border}`,
-            borderRadius: 12,
+            borderRadius: 8,
             padding: 18,
             boxShadow: shadow,
             backdropFilter,
@@ -382,7 +377,7 @@ export default function IncidentDetailWidget() {
           <div
             style={{
               fontSize: 12,
-              fontWeight: 800,
+              fontWeight: 500,
               color: muted,
               textTransform: "uppercase",
               marginBottom: 10,
@@ -421,7 +416,7 @@ export default function IncidentDetailWidget() {
             <span
               style={{
                 fontSize: 16,
-                fontWeight: 800,
+                fontWeight: 500,
                 color: riskColor[impact.engineeringRisk || "healthy"],
               }}
             >
@@ -446,7 +441,7 @@ export default function IncidentDetailWidget() {
             style={{
               background: cardBg,
               border: `1px solid ${border}`,
-              borderRadius: 12,
+              borderRadius: 8,
               padding: 16,
               boxShadow: shadow,
               backdropFilter,
@@ -455,7 +450,7 @@ export default function IncidentDetailWidget() {
             <div
               style={{
                 fontSize: 12,
-                fontWeight: 800,
+                fontWeight: 500,
                 color: muted,
                 textTransform: "uppercase",
                 marginBottom: 12,
@@ -546,7 +541,7 @@ export default function IncidentDetailWidget() {
                 }}
               >
                 <span>HTTP Health Check state</span>
-                <span style={{ fontWeight: 800, color: "#ef4444" }}>
+                <span style={{ fontWeight: 500, color: "#ef4444" }}>
                   DOWNTIME (3 failures)
                 </span>
               </div>
@@ -560,7 +555,7 @@ export default function IncidentDetailWidget() {
             style={{
               background: cardBg,
               border: `1px solid ${border}`,
-              borderRadius: 12,
+              borderRadius: 8,
               padding: 16,
               boxShadow: shadow,
               backdropFilter,
@@ -569,7 +564,7 @@ export default function IncidentDetailWidget() {
             <div
               style={{
                 fontSize: 12,
-                fontWeight: 800,
+                fontWeight: 500,
                 color: muted,
                 textTransform: "uppercase",
                 marginBottom: 12,
@@ -626,7 +621,7 @@ export default function IncidentDetailWidget() {
             style={{
               background: cardBg,
               border: `1px solid ${border}`,
-              borderRadius: 12,
+              borderRadius: 8,
               padding: 16,
               boxShadow: shadow,
               backdropFilter,
@@ -635,7 +630,7 @@ export default function IncidentDetailWidget() {
             <div
               style={{
                 fontSize: 12,
-                fontWeight: 800,
+                fontWeight: 500,
                 color: muted,
                 textTransform: "uppercase",
                 marginBottom: 12,
@@ -691,7 +686,7 @@ export default function IncidentDetailWidget() {
                     style={{
                       width: "45%",
                       height: "100%",
-                      background: "#6366f1",
+                      background: "#ffffff",
                     }}
                   />
                 </div>
@@ -705,10 +700,10 @@ export default function IncidentDetailWidget() {
       <div
         style={{
           fontSize: 12,
-          fontWeight: 800,
+          fontWeight: 500,
           color: muted,
           textTransform: "uppercase",
-          letterSpacing: "1px",
+          letterSpacing: "0.4px",
           marginBottom: 12,
         }}
       >
@@ -718,7 +713,7 @@ export default function IncidentDetailWidget() {
         style={{
           background: cardBg,
           border: `1px solid ${border}`,
-          borderRadius: 12,
+          borderRadius: 8,
           padding: 16,
           marginBottom: 20,
           boxShadow: shadow,
@@ -746,7 +741,7 @@ export default function IncidentDetailWidget() {
                   width: 10,
                   height: 10,
                   borderRadius: "50%",
-                  background: severityColor[severity] || "#6366f1",
+                  background: severityColor[severity] || "#ffffff",
                   marginTop: 4,
                   boxShadow: `0 0 8px ${severityColor[severity]}`,
                 }}
@@ -770,7 +765,7 @@ export default function IncidentDetailWidget() {
                   alignItems: "center",
                 }}
               >
-                <span style={{ fontSize: 13, fontWeight: 800 }}>{t.agent}</span>
+                <span style={{ fontSize: 13, fontWeight: 500 }}>{t.agent}</span>
                 <span style={{ fontSize: 11, color: muted }}>
                   {new Date(t.timestamp).toLocaleTimeString([], {
                     hour: "2-digit",
@@ -781,7 +776,7 @@ export default function IncidentDetailWidget() {
               <div
                 style={{
                   fontSize: 12,
-                  color: "#6366f1",
+                  color: "#ffffff",
                   fontWeight: 700,
                   marginTop: 2,
                 }}
@@ -807,10 +802,10 @@ export default function IncidentDetailWidget() {
       <div
         style={{
           fontSize: 12,
-          fontWeight: 800,
+          fontWeight: 500,
           color: muted,
           textTransform: "uppercase",
-          letterSpacing: "1px",
+          letterSpacing: "0.4px",
           marginBottom: 12,
         }}
       >
@@ -823,7 +818,7 @@ export default function IncidentDetailWidget() {
             style={{
               background: cardBg,
               border: `1px solid ${border}`,
-              borderRadius: 12,
+              borderRadius: 8,
               padding: 16,
               boxShadow: shadow,
               backdropFilter,
@@ -841,10 +836,10 @@ export default function IncidentDetailWidget() {
                 style={{
                   padding: "2px 9px",
                   borderRadius: 999,
-                  background: priorityColor[r.priority] ?? muted,
+                  background: "#1c1c1c",
                   color: "#fff",
                   fontSize: 10,
-                  fontWeight: 800,
+                  fontWeight: 500,
                   textTransform: "uppercase",
                 }}
               >
@@ -869,7 +864,7 @@ export default function IncidentDetailWidget() {
                       : r.status === "pending"
                         ? "#f59e0b"
                         : muted,
-                  fontWeight: 800,
+                  fontWeight: 500,
                   textTransform: "uppercase",
                 }}
               >

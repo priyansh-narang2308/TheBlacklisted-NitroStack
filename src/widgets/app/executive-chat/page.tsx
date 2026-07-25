@@ -52,18 +52,13 @@ export default function ExecutiveChatWidget() {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, loading]);
 
-  const isDark = theme === "dark";
-  const bg = isDark
-    ? "radial-gradient(circle at top left, #0f172a, #020617)"
-    : "#f8fafc";
-  const cardBg = isDark ? "rgba(30, 41, 59, 0.7)" : "#ffffff";
-  const text = isDark ? "#f8fafc" : "#0f172a";
-  const muted = isDark ? "#94a3b8" : "#64748b";
-  const border = isDark ? "rgba(51, 65, 85, 0.5)" : "#e2e8f0";
-  const shadow = isDark
-    ? "0 8px 32px 0 rgba(0, 0, 0, 0.3)"
-    : "0 4px 12px rgba(0, 0, 0, 0.05)";
-  const backdropFilter = isDark ? "blur(8px)" : "none";
+  const bg = "#111111";
+  const cardBg = "#1c1c1c";
+  const text = "#ffffff";
+  const muted = "#888888";
+  const border = "#2a2a2a";
+  const shadow = "none";
+  const backdropFilter = "none";
 
   const shellStyle: React.CSSProperties = {
     padding: 32,
@@ -220,7 +215,7 @@ export default function ExecutiveChatWidget() {
             style={{
               fontSize: 11,
               letterSpacing: "1.2px",
-              color: "#6366f1",
+              color: "#ffffff",
               fontWeight: 800,
               textTransform: "uppercase",
             }}
@@ -242,8 +237,8 @@ export default function ExecutiveChatWidget() {
           style={{
             padding: "4px 12px",
             borderRadius: 999,
-            background: isDark ? "rgba(99, 102, 241, 0.15)" : "#e0e7ff",
-            color: "#6366f1",
+            background: "#2a2a2a",
+            color: "#ffffff",
             fontSize: 10,
             fontWeight: 800,
             border: "1px solid rgba(99, 102, 241, 0.3)",
@@ -283,10 +278,8 @@ export default function ExecutiveChatWidget() {
               boxShadow: shadow,
             }}
             onMouseOver={(e) => {
-              e.currentTarget.style.borderColor = "#6366f1";
-              e.currentTarget.style.background = isDark
-                ? "rgba(99,102,241,0.1)"
-                : "#f3f4f6";
+              e.currentTarget.style.borderColor = "#ffffff";
+              e.currentTarget.style.background = "#2a2a2a";
             }}
             onMouseOut={(e) => {
               e.currentTarget.style.borderColor = border;
@@ -326,7 +319,7 @@ export default function ExecutiveChatWidget() {
               <div
                 style={{
                   maxWidth: "80%",
-                  background: isUser ? "#6366f1" : cardBg,
+                  background: isUser ? "#ffffff" : cardBg,
                   color: isUser ? "#ffffff" : text,
                   borderRadius: isUser
                     ? "16px 16px 2px 16px"
@@ -353,10 +346,8 @@ export default function ExecutiveChatWidget() {
                     {m.mode === "mock" && (
                       <span
                         style={{
-                          background: isDark
-                            ? "rgba(245,158,11,0.15)"
-                            : "#fef3c7",
-                          color: "#d97706",
+                          background: "#2a2a2a",
+                          color: "#888888",
                           padding: "1px 4px",
                           borderRadius: 3,
                           fontSize: 8,
@@ -403,12 +394,10 @@ export default function ExecutiveChatWidget() {
                           style={{
                             fontSize: 9,
                             padding: "2px 6px",
-                            background: isDark
-                              ? "rgba(239,68,68,0.2)"
-                              : "#fee2e2",
-                            color: "#ef4444",
+                            background: "#2a2a2a",
+                            color: "#888888",
                             borderRadius: 4,
-                            fontWeight: 800,
+                            fontWeight: 500,
                           }}
                         >
                           {incId}
@@ -482,7 +471,7 @@ export default function ExecutiveChatWidget() {
           disabled={loading}
           style={{
             flex: 1,
-            background: isDark ? "#0f172a" : "#ffffff",
+            background: "#1c1c1c",
             border: `1px solid ${border}`,
             borderRadius: 10,
             padding: "12px 16px",
@@ -495,7 +484,7 @@ export default function ExecutiveChatWidget() {
           type="submit"
           disabled={loading || !inputValue.trim()}
           style={{
-            background: "#6366f1",
+            background: "#ffffff",
             color: "#fff",
             border: "none",
             borderRadius: 10,

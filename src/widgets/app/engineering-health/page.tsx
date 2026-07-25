@@ -59,26 +59,21 @@ export default function EngineeringHealthWidget() {
   const rawData = getToolOutput<EngineeringHealthData>();
 
   const isDark = theme === "dark";
-  const bg = isDark
-    ? "radial-gradient(circle at top left, #0f172a, #020617)"
-    : "#f8fafc";
-  const card = isDark ? "rgba(30, 41, 59, 0.7)" : "#ffffff";
-  const text = isDark ? "#f8fafc" : "#0f172a";
-  const muted = isDark ? "#94a3b8" : "#64748b";
-  const border = isDark ? "rgba(51, 65, 85, 0.5)" : "#e2e8f0";
-  const shadow = isDark
-    ? "0 8px 32px 0 rgba(0, 0, 0, 0.4)"
-    : "0 4px 12px rgba(0, 0, 0, 0.05)";
-  const backdropFilter = isDark ? "blur(8px)" : "none";
+  const bg = "#060d1f";
+  const card = "#0d1b35";
+  const text = "#e8edf5";
+  const muted = "#5a7299";
+  const border = "#1a2d50";
+  const shadow = "0 2px 12px rgba(0,0,0,0.4)";
+  const backdropFilter = "none";
 
   const shellStyle: React.CSSProperties = {
     padding: 32,
     textAlign: "center",
     color: text,
     background: bg,
-    borderRadius: 16,
-    fontFamily:
-      'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+    borderRadius: 8,
+    fontFamily: '"Inter", -apple-system, sans-serif',
     minHeight: 300,
     display: "flex",
     flexDirection: "column",
@@ -153,10 +148,9 @@ export default function EngineeringHealthWidget() {
         background: bg,
         color: text,
         padding: 24,
-        borderRadius: 16,
-        fontFamily:
-          'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
-        boxShadow: "0 12px 40px rgba(0,0,0,0.15)",
+        borderRadius: 8,
+        fontFamily: '"Inter", -apple-system, sans-serif',
+        boxShadow: "none",
         border: `1px solid ${border}`,
       }}
     >
@@ -176,9 +170,9 @@ export default function EngineeringHealthWidget() {
             <div
               style={{
                 fontSize: 11,
-                letterSpacing: "1px",
-                color: "#6366f1",
-                fontWeight: 800,
+                letterSpacing: "0.4px",
+                color: "#ffffff",
+                fontWeight: 500,
                 textTransform: "uppercase",
               }}
             >
@@ -188,11 +182,12 @@ export default function EngineeringHealthWidget() {
               <span
                 style={{
                   fontSize: 9,
-                  background: isDark ? "rgba(245,158,11,0.15)" : "#fef3c7",
-                  color: "#d97706",
+                  background: "#1c1c1c",
+                  color: "#888888",
                   padding: "1px 5px",
                   borderRadius: 4,
-                  fontWeight: 800,
+                  border: "1px solid #2a2a2a",
+                  fontWeight: 400,
                 }}
               >
                 MOCK
@@ -202,9 +197,9 @@ export default function EngineeringHealthWidget() {
           <div
             style={{
               fontSize: 24,
-              fontWeight: 800,
+              fontWeight: 500,
               marginTop: 4,
-              letterSpacing: "-0.5px",
+              letterSpacing: "0",
             }}
           >
             Engineering Health Center
@@ -229,7 +224,7 @@ export default function EngineeringHealthWidget() {
           style={{
             background: card,
             border: `1px solid ${border}`,
-            borderRadius: 16,
+            borderRadius: 8,
             padding: 32,
             display: "flex",
             flexDirection: "column",
@@ -257,7 +252,7 @@ export default function EngineeringHealthWidget() {
                 width: 112,
                 height: 112,
                 borderRadius: "50%",
-                background: isDark ? "#1e293b" : "#ffffff",
+                background: "#1c1c1c",
                 display: "flex",
                 flexDirection: "column",
                 alignItems: "center",
@@ -267,8 +262,8 @@ export default function EngineeringHealthWidget() {
               <span
                 style={{
                   fontSize: 36,
-                  fontWeight: 900,
-                  color: statusColor[status],
+                  fontWeight: 600,
+                  color: "#ffffff",
                 }}
               >
                 {score}%
@@ -292,10 +287,10 @@ export default function EngineeringHealthWidget() {
               padding: "6px 16px",
               borderRadius: 999,
               background: `rgba(${status === "healthy" ? "16,185,129" : status === "warning" ? "245,158,11" : "239,68,68"}, 0.2)`,
-              border: `1px solid ${statusColor[status]}`,
-              color: statusColor[status],
+              border: "1px solid #2a2a2a",
+              color: "#ffffff",
               fontSize: 13,
-              fontWeight: 800,
+              fontWeight: 500,
               textTransform: "uppercase",
             }}
           >
@@ -308,7 +303,7 @@ export default function EngineeringHealthWidget() {
           style={{
             background: card,
             border: `1px solid ${border}`,
-            borderRadius: 16,
+            borderRadius: 8,
             padding: 24,
             boxShadow: shadow,
             backdropFilter,
@@ -317,8 +312,8 @@ export default function EngineeringHealthWidget() {
           <div
             style={{
               fontSize: 14,
-              fontWeight: 800,
-              color: "#6366f1",
+              fontWeight: 500,
+              color: "#ffffff",
               textTransform: "uppercase",
               marginBottom: 16,
             }}
@@ -347,7 +342,7 @@ export default function EngineeringHealthWidget() {
                   </span>
                   <span
                     style={{
-                      fontWeight: 800,
+                      fontWeight: 500,
                       color:
                         statusColor[
                           m.value >= 85
@@ -374,7 +369,7 @@ export default function EngineeringHealthWidget() {
                     style={{
                       width: `${m.value}%`,
                       height: "100%",
-                      background: `linear-gradient(to right, ${statusColor[m.value >= 85 ? "healthy" : m.value >= 65 ? "warning" : "critical"]}, #6366f1)`,
+                      background: "#ffffff",
                       borderRadius: 999,
                     }}
                   />

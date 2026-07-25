@@ -31,7 +31,7 @@ interface RecommendationsData {
 const priorityColor: Record<string, string> = {
   high: "#ef4444",
   medium: "#f59e0b",
-  low: "#3b82f6",
+  low: "#ffffff",
 };
 
 const MOCK_RECOMMENDATIONS: RecommendationsData = {
@@ -74,26 +74,21 @@ export default function AutoRemediationWidget() {
   >({});
 
   const isDark = theme === "dark";
-  const bg = isDark
-    ? "radial-gradient(circle at top left, #0f172a, #020617)"
-    : "#f8fafc";
-  const cardBg = isDark ? "rgba(30, 41, 59, 0.7)" : "#ffffff";
-  const text = isDark ? "#f8fafc" : "#0f172a";
-  const muted = isDark ? "#94a3b8" : "#64748b";
-  const border = isDark ? "rgba(51, 65, 85, 0.5)" : "#e2e8f0";
-  const shadow = isDark
-    ? "0 8px 32px 0 rgba(0, 0, 0, 0.3)"
-    : "0 4px 12px rgba(0, 0, 0, 0.05)";
-  const backdropFilter = isDark ? "blur(8px)" : "none";
+  const bg = "#060d1f";
+  const cardBg = "#0d1b35";
+  const text = "#e8edf5";
+  const muted = "#5a7299";
+  const border = "#1a2d50";
+  const shadow = "0 2px 12px rgba(0,0,0,0.4)";
+  const backdropFilter = "none";
 
   const shellStyle: React.CSSProperties = {
     padding: 32,
     textAlign: "center",
     color: text,
     background: bg,
-    borderRadius: 16,
-    fontFamily:
-      'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+    borderRadius: 8,
+    fontFamily: '"Inter", -apple-system, sans-serif',
   };
 
   if (!isReady)
@@ -147,11 +142,10 @@ export default function AutoRemediationWidget() {
         background: bg,
         color: text,
         padding: 24,
-        borderRadius: 16,
-        fontFamily:
-          'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+        borderRadius: 8,
+        fontFamily: '"Inter", -apple-system, sans-serif',
         border: `1px solid ${border}`,
-        boxShadow: "0 12px 40px rgba(0,0,0,0.15)",
+        boxShadow: "none",
       }}
     >
       <div style={{ marginBottom: 20 }}>
@@ -159,9 +153,9 @@ export default function AutoRemediationWidget() {
           <div
             style={{
               fontSize: 11,
-              letterSpacing: "1.2px",
-              color: "#6366f1",
-              fontWeight: 800,
+              letterSpacing: "0.5px",
+              color: "#ffffff",
+              fontWeight: 500,
               textTransform: "uppercase",
             }}
           >
@@ -171,11 +165,12 @@ export default function AutoRemediationWidget() {
             <span
               style={{
                 fontSize: 9,
-                background: isDark ? "rgba(245,158,11,0.15)" : "#fef3c7",
-                color: "#d97706",
+                background: "#1c1c1c",
+                color: "#888888",
                 padding: "1px 5px",
                 borderRadius: 4,
-                fontWeight: 800,
+                  border: "1px solid #2a2a2a",
+                  fontWeight: 400,
               }}
             >
               MOCK
@@ -185,9 +180,9 @@ export default function AutoRemediationWidget() {
         <div
           style={{
             fontSize: 22,
-            fontWeight: 800,
+            fontWeight: 500,
             marginTop: 4,
-            letterSpacing: "-0.5px",
+            letterSpacing: "0",
           }}
         >
           Action Recommendations
@@ -203,7 +198,7 @@ export default function AutoRemediationWidget() {
           style={{
             background: cardBg,
             border: `1px solid ${border}`,
-            borderRadius: 12,
+            borderRadius: 8,
             padding: 24,
             textAlign: "center",
             color: muted,
@@ -226,7 +221,7 @@ export default function AutoRemediationWidget() {
                 style={{
                   background: cardBg,
                   border: `1px solid ${border}`,
-                  borderRadius: 14,
+                  borderRadius: 8,
                   padding: 20,
                   boxShadow: shadow,
                   backdropFilter,
@@ -247,10 +242,10 @@ export default function AutoRemediationWidget() {
                     style={{
                       padding: "3px 10px",
                       borderRadius: 999,
-                      background: priorityColor[r.priority] ?? muted,
+                      background: "#1c1c1c",
                       color: "#fff",
                       fontSize: 10,
-                      fontWeight: 800,
+                      fontWeight: 500,
                       textTransform: "uppercase",
                     }}
                   >
@@ -268,7 +263,7 @@ export default function AutoRemediationWidget() {
                       fontSize: 11,
                       padding: "3px 10px",
                       borderRadius: 6,
-                      fontWeight: 800,
+                      fontWeight: 500,
                       textTransform: "uppercase",
                       background:
                         currentStatus === "executed"
@@ -289,7 +284,7 @@ export default function AutoRemediationWidget() {
                 </div>
 
                 {/* Body */}
-                <div style={{ fontSize: 16, fontWeight: 800, marginBottom: 6 }}>
+                <div style={{ fontSize: 16, fontWeight: 500, marginBottom: 6 }}>
                   {r.title}
                 </div>
                 <div
@@ -319,7 +314,7 @@ export default function AutoRemediationWidget() {
                     {r.confidence && (
                       <div style={{ marginBottom: 6 }}>
                         <b>Confidence Level:</b>{" "}
-                        <span style={{ color: "#10b981", fontWeight: 800 }}>
+                        <span style={{ color: "#10b981", fontWeight: 500 }}>
                           {r.confidence}%
                         </span>
                       </div>
@@ -357,7 +352,7 @@ export default function AutoRemediationWidget() {
                         borderRadius: 8,
                         padding: "10px 20px",
                         fontSize: 13,
-                        fontWeight: 800,
+                        fontWeight: 500,
                         cursor: "pointer",
                         flex: 1,
                         boxShadow: "0 4px 12px rgba(16,185,129,0.2)",
@@ -377,7 +372,7 @@ export default function AutoRemediationWidget() {
                         borderRadius: 8,
                         padding: "10px 20px",
                         fontSize: 13,
-                        fontWeight: 800,
+                        fontWeight: 500,
                         cursor: "pointer",
                         flex: 1,
                         transition: "background 0.2s",

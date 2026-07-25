@@ -72,20 +72,20 @@ export default function AgentActivityWidget() {
   const rawData = getToolOutput<AgentActivity>();
 
   const isDark = theme === "dark";
-  const bg = isDark ? "#0f172a" : "#f8fafc";
-  const cardBg = isDark ? "#1e293b" : "#ffffff";
-  const text = isDark ? "#f1f5f9" : "#0f172a";
-  const muted = isDark ? "#94a3b8" : "#64748b";
-  const border = isDark ? "#334155" : "#e2e8f0";
-  const accent = "#6366f1";
+  const bg = "#060d1f";
+  const cardBg = "#0d1b35";
+  const text = "#e8edf5";
+  const muted = "#5a7299";
+  const border = "#1a2d50";
+  const accent = "#ffffff";
 
   const shellStyle: React.CSSProperties = {
     padding: 32,
     textAlign: "center",
     color: text,
     background: bg,
-    borderRadius: 16,
-    fontFamily: "system-ui, sans-serif",
+    borderRadius: 8,
+    fontFamily: "\"Playfair Display\", \"Merriweather\", serif",
   };
   if (!isReady) return <div style={shellStyle}>Initializing agents…</div>;
 
@@ -102,8 +102,8 @@ export default function AgentActivityWidget() {
         background: bg,
         color: text,
         padding: 20,
-        borderRadius: 16,
-        fontFamily: "system-ui, sans-serif",
+        borderRadius: 8,
+        fontFamily: "\"Playfair Display\", \"Merriweather\", serif",
       }}
     >
       <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
@@ -121,11 +121,12 @@ export default function AgentActivityWidget() {
           <span
             style={{
               fontSize: 9,
-              background: isDark ? "rgba(245,158,11,0.15)" : "#fef3c7",
-              color: "#d97706",
+              background: "#1c1c1c",
+              color: "#888888",
               padding: "1px 5px",
               borderRadius: 4,
-              fontWeight: 800,
+                  border: "1px solid #2a2a2a",
+                  fontWeight: 400,
             }}
           >
             MOCK
@@ -135,7 +136,7 @@ export default function AgentActivityWidget() {
       <div
         style={{
           fontSize: 20,
-          fontWeight: 800,
+          fontWeight: 500,
           marginTop: 2,
           marginBottom: 16,
         }}
@@ -172,7 +173,7 @@ export default function AgentActivityWidget() {
               {agent}
             </span>
             {i < pipeline.length - 1 && (
-              <span style={{ color: accent, fontWeight: 800 }}>→</span>
+              <span style={{ color: accent, fontWeight: 500 }}>→</span>
             )}
           </div>
         ))}
@@ -197,7 +198,7 @@ export default function AgentActivityWidget() {
             style={{
               background: cardBg,
               border: `1px solid ${border}`,
-              borderRadius: 10,
+              borderRadius: 8,
               padding: 12,
             }}
           >

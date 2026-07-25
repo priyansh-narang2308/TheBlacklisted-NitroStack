@@ -1,6 +1,6 @@
 "use client";
 
-import { useTheme, useWidgetSDK } from "@nitrostack/widgets";
+import { useWidgetSDK } from "@nitrostack/widgets";
 
 export const dynamic = "force-dynamic";
 
@@ -33,96 +33,151 @@ interface CompanyHealth {
   lastUpdated: string;
 }
 
-const statusColor: Record<HealthStatus, string> = {
-  healthy: "#10b981", // Emerald
-  warning: "#f59e0b", // Amber
-  critical: "#ef4444", // Red
+// Monochromatic palette matching the reference image
+const BG = "#111111";
+const CARD = "#1c1c1c";
+const BORDER = "#2a2a2a";
+const TEXT = "#ffffff";
+const MUTED = "#888888";
+const FONT = '"Inter", -apple-system, BlinkMacSystemFont, sans-serif';
+
+const statusBar: Record<HealthStatus, string> = {
+  healthy: "#ffffff",
+  warning: "#facc15",
+  critical: "#ef4444",
 };
 
-const priorityColor: Record<string, string> = {
-  high: "#ef4444",
-  medium: "#f59e0b",
-  low: "#3b82f6",
+const DEPT_ICONS: Record<string, string> = {
+  engineering: "</>",
+  operations: "⚙",
+  support: "🎧",
+  hr: "👥",
+  finance: "$",
+  security: "🔒",
+  product: "📦",
 };
 
 const MOCK_COMPANY_HEALTH: CompanyHealth = {
-  companyHealthScore: 82,
-  status: "warning",
-  openIncidents: 2,
-  criticalRisks: 1,
+  companyHealthScore: 98,
+  status: "healthy",
+  openIncidents: 0,
+  criticalRisks: 0,
   departments: [
     {
       departmentId: "engineering",
       departmentName: "Engineering",
-      healthScore: 74,
-      status: "warning",
-      summary: "Database deployment failed on primary checkout service.",
+      healthScore: 98,
+      status: "healthy",
+      summary: "All CI/CD pipelines green. Infrastructure metrics healthy.",
       owningAgent: "Engineering Agent",
       sources: ["GitHub", "Datadog"],
     },
     {
       departmentId: "operations",
       departmentName: "Operations",
-      healthScore: 88,
+      healthScore: 95,
       status: "healthy",
-      summary:
-        "Infrastructure load is normal, but deployment rollback is pending.",
-      owningAgent: "Monitoring Agent",
+      summary: "Release schedules align with Jira progress. Sprint is on track.",
+      owningAgent: "Operations Agent",
       sources: ["Datadog"],
     },
     {
-      departmentId: "product",
-      departmentName: "Product",
-      healthScore: 95,
+      departmentId: "support",
+      departmentName: "Support",
+      healthScore: 96,
       status: "healthy",
-      summary: "Sprint delivery tracking on target.",
+      summary: "Customer issue reports remain within baseline rates.",
+      owningAgent: "Support Agent",
+      sources: ["Jira"],
+    },
+    {
+      departmentId: "hr",
+      departmentName: "HR",
+      healthScore: 100,
+      status: "healthy",
+      summary: "No critical staffing absences or scheduling conflicts.",
+      owningAgent: "Operations Agent",
+      sources: ["Google Calendar"],
+    },
+    {
+      departmentId: "finance",
+      departmentName: "Finance",
+      healthScore: 98,
+      status: "healthy",
+      summary: "System metrics and checkouts operational. No revenue risks.",
       owningAgent: "Executive Agent",
       sources: ["Jira"],
     },
-  ],
-  recommendations: [
     {
-      recommendationId: "REC-1",
-      incidentId: "INC-1004",
-      priority: "high",
-      title: "Rollback database migrations on production",
-    },
-    {
-      recommendationId: "REC-2",
-      incidentId: "INC-1005",
-      priority: "medium",
-      title: "Scale authentication gateway service replicas",
+      departmentId: "security",
+      departmentName: "Security",
+      healthScore: 100,
+      status: "healthy",
+      summary: "No system health check failures or unauthorized accesses.",
+      owningAgent: "Monitoring Agent",
+      sources: ["Datadog"],
     },
   ],
+  recommendations: [],
   lastUpdated: new Date().toISOString(),
 };
 
+function StatusBadge({ status }: { status: HealthStatus }) {
+  return (
+    <span
+      style={{
+        display: "inline-flex",
+        alignItems: "center",
+        padding: "3px 10px",
+        borderRadius: 999,
+        border: `1px solid ${BORDER}`,
+        background: "transparent",
+        color: TEXT,
+        fontSize: 10,
+        fontWeight: 500,
+        letterSpacing: "0.5px",
+        textTransform: "uppercase",
+        fontFamily: FONT,
+      }}
+    >
+      {status}
+    </span>
+  );
+}
+
+function DeptIcon({ id }: { id: string }) {
+  return (
+    <div
+      style={{
+        width: 36,
+        height: 36,
+        borderRadius: 8,
+        background: CARD,
+        border: `1px solid ${BORDER}`,
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        fontSize: 14,
+        flexShrink: 0,
+        color: TEXT,
+      }}
+    >
+      {DEPT_ICONS[id] ?? "•"}
+    </div>
+  );
+}
+
 export default function CompanyHealthWidget() {
-  const theme = useTheme();
   const { isReady, getToolOutput } = useWidgetSDK();
   const rawData = getToolOutput<CompanyHealth>();
-
-  const isDark = theme === "dark";
-  const bg = isDark
-    ? "radial-gradient(circle at top left, #0f172a, #020617)"
-    : "#f8fafc";
-  const card = isDark ? "rgba(30, 41, 59, 0.7)" : "#ffffff";
-  const text = isDark ? "#f8fafc" : "#0f172a";
-  const muted = isDark ? "#94a3b8" : "#64748b";
-  const border = isDark ? "rgba(51, 65, 85, 0.5)" : "#e2e8f0";
-  const shadow = isDark
-    ? "0 8px 32px 0 rgba(0, 0, 0, 0.4)"
-    : "0 4px 12px rgba(0, 0, 0, 0.05)";
-  const backdropFilter = isDark ? "blur(8px)" : "none";
 
   const shellStyle: React.CSSProperties = {
     padding: 32,
     textAlign: "center",
-    color: text,
-    background: bg,
-    borderRadius: 16,
-    fontFamily:
-      'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+    color: TEXT,
+    background: BG,
+    borderRadius: 12,
+    fontFamily: FONT,
     minHeight: 300,
     display: "flex",
     flexDirection: "column",
@@ -130,258 +185,163 @@ export default function CompanyHealthWidget() {
     alignItems: "center",
   };
 
-  if (!isReady)
-    return <div style={shellStyle}>Initializing Digital Twin...</div>;
+  if (!isReady) return <div style={shellStyle}>Initializing Digital Twin...</div>;
 
-  const isMock = !rawData;
   const data = rawData || MOCK_COMPANY_HEALTH;
-  if (!data)
-    return (
-      <div style={shellStyle}>Loading live organizational telemetry...</div>
-    );
+  if (!data) return <div style={shellStyle}>Loading live organizational telemetry...</div>;
 
   const score = data.companyHealthScore ?? 0;
-  const status = (data.status ?? "warning") as HealthStatus;
+  const status = (data.status ?? "healthy") as HealthStatus;
   const departments = data.departments ?? [];
   const recommendations = data.recommendations ?? [];
-
-  // Extract Engineering specifically to show its breakdown
   const engDept = departments.find((d) => d.departmentId === "engineering");
   const engScore = engDept ? engDept.healthScore : score;
 
-  const statCard = (label: string, value: string, color: string) => (
-    <div
-      style={{
-        background: card,
-        border: `1px solid ${border}`,
-        borderRadius: 12,
-        padding: "12px 18px",
-        minWidth: 100,
-        textAlign: "center",
-        boxShadow: shadow,
-        backdropFilter,
-      }}
-    >
-      <div
-        style={{
-          fontSize: 26,
-          fontWeight: 800,
-          color,
-          letterSpacing: "-0.5px",
-        }}
-      >
-        {value}
-      </div>
-      <div
-        style={{
-          fontSize: 10,
-          color: muted,
-          fontWeight: 700,
-          textTransform: "uppercase",
-          marginTop: 2,
-        }}
-      >
-        {label}
-      </div>
-    </div>
-  );
+  const engMetrics = [
+    { label: "Deployment Success", weight: 25, value: engScore },
+    { label: "CI/CD Success", weight: 20, value: Math.min(100, Math.round(engScore * 1.02)) },
+    { label: "Sprint Health", weight: 20, value: Math.min(100, Math.round(engScore * 0.95)) },
+    { label: "Issue Rate Stability", weight: 15, value: Math.min(100, Math.round(engScore * 0.98)) },
+    { label: "Infrastructure Health", weight: 20, value: Math.min(100, Math.round(engScore * 1.02)) },
+  ];
 
   return (
     <div
       style={{
-        background: bg,
-        color: text,
+        background: BG,
+        color: TEXT,
         padding: 24,
-        borderRadius: 16,
-        fontFamily:
-          'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
-        boxShadow: "0 12px 40px rgba(0,0,0,0.15)",
-        border: `1px solid ${border}`,
+        borderRadius: 12,
+        fontFamily: FONT,
+        minWidth: 0,
       }}
     >
-      {/* Header */}
+      {/* ── Header ── */}
       <div
         style={{
           display: "flex",
           justifyContent: "space-between",
-          alignItems: "center",
-          marginBottom: 24,
+          alignItems: "flex-start",
+          marginBottom: 28,
           flexWrap: "wrap",
           gap: 16,
         }}
       >
         <div>
-          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-            <div
-              style={{
-                fontSize: 11,
-                letterSpacing: "1px",
-                color: "#6366f1",
-                fontWeight: 800,
-                textTransform: "uppercase",
-              }}
-            >
-              AI Workplace Digital Twin
-            </div>
-            {isMock && (
-              <span
-                style={{
-                  fontSize: 9,
-                  background: isDark ? "rgba(245,158,11,0.15)" : "#fef3c7",
-                  color: "#d97706",
-                  padding: "1px 5px",
-                  borderRadius: 4,
-                  fontWeight: 800,
-                }}
-              >
-                MOCK
-              </span>
-            )}
+          <div style={{ fontSize: 11, color: MUTED, letterSpacing: "0.8px", textTransform: "uppercase", marginBottom: 6 }}>
+            AI Workplace Digital Twin
           </div>
-          <div
-            style={{
-              fontSize: 24,
-              fontWeight: 800,
-              marginTop: 4,
-              letterSpacing: "-0.5px",
-            }}
-          >
+          <div style={{ fontSize: 28, fontWeight: 600, letterSpacing: "-0.5px" }}>
             Executive Dashboard
           </div>
         </div>
         <div style={{ display: "flex", gap: 12 }}>
-          {statCard(
-            "Open Incidents",
-            String(data.openIncidents ?? 0),
-            "#f59e0b",
-          )}
-          {statCard(
-            "Critical Risks",
-            String(data.criticalRisks ?? 0),
-            "#ef4444",
-          )}
+          {/* Open Incidents Card */}
+          <div
+            style={{
+              background: CARD,
+              border: `1px solid ${BORDER}`,
+              borderRadius: 10,
+              padding: "12px 20px",
+              display: "flex",
+              alignItems: "center",
+              gap: 12,
+            }}
+          >
+            <span style={{ fontSize: 20 }}>🛡</span>
+            <div>
+              <div style={{ fontSize: 24, fontWeight: 600 }}>{data.openIncidents ?? 0}</div>
+              <div style={{ fontSize: 10, color: MUTED, letterSpacing: "0.5px", textTransform: "uppercase" }}>Open Incidents</div>
+            </div>
+          </div>
+          {/* Critical Risks Card */}
+          <div
+            style={{
+              background: CARD,
+              border: `1px solid ${BORDER}`,
+              borderRadius: 10,
+              padding: "12px 20px",
+              display: "flex",
+              alignItems: "center",
+              gap: 12,
+            }}
+          >
+            <span style={{ fontSize: 20 }}>⚠</span>
+            <div>
+              <div style={{ fontSize: 24, fontWeight: 600 }}>{data.criticalRisks ?? 0}</div>
+              <div style={{ fontSize: 10, color: MUTED, letterSpacing: "0.5px", textTransform: "uppercase" }}>Critical Risks</div>
+            </div>
+          </div>
         </div>
       </div>
 
-      {/* Main Grid: Overall Health Gauge + Engineering Health breakdown */}
+      {/* ── Main Grid ── */}
       <div
         style={{
           display: "grid",
           gridTemplateColumns: "1fr 1fr",
-          gap: 20,
-          marginBottom: 24,
-          flexWrap: "wrap",
+          gap: 16,
+          marginBottom: 28,
         }}
       >
-        {/* Overall System Health Gauge */}
+        {/* Gauge Card */}
         <div
           style={{
-            background: card,
-            border: `1px solid ${border}`,
-            borderRadius: 16,
+            background: CARD,
+            border: `1px solid ${BORDER}`,
+            borderRadius: 12,
             padding: 24,
             display: "flex",
             alignItems: "center",
             gap: 24,
-            boxShadow: shadow,
-            backdropFilter,
           }}
         >
+          {/* Circular gauge */}
           <div
             style={{
-              width: 110,
-              height: 110,
+              width: 120,
+              height: 120,
               borderRadius: "50%",
               flexShrink: 0,
-              background: `conic-gradient(${statusColor[status]} ${score * 3.6}deg, ${border} 0deg)`,
+              background: `conic-gradient(#ffffff ${score * 3.6}deg, #2a2a2a 0deg)`,
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
-              boxShadow: "inset 0 0 12px rgba(0,0,0,0.1)",
             }}
           >
             <div
               style={{
-                width: 88,
-                height: 88,
+                width: 94,
+                height: 94,
                 borderRadius: "50%",
-                background: isDark ? "#1e293b" : "#ffffff",
+                background: CARD,
                 display: "flex",
                 flexDirection: "column",
                 alignItems: "center",
                 justifyContent: "center",
               }}
             >
-              <span
-                style={{
-                  fontSize: 26,
-                  fontWeight: 900,
-                  color: statusColor[status],
-                }}
-              >
-                {score}%
-              </span>
-              <span
-                style={{
-                  fontSize: 9,
-                  color: muted,
-                  fontWeight: 700,
-                  textTransform: "uppercase",
-                }}
-              >
-                Overall
-              </span>
+              <span style={{ fontSize: 24, fontWeight: 700, color: TEXT }}>{score}%</span>
+              <span style={{ fontSize: 9, color: MUTED, textTransform: "uppercase", letterSpacing: "0.5px" }}>Overall</span>
             </div>
           </div>
+
           <div>
-            <div
-              style={{
-                display: "inline-block",
-                padding: "4px 12px",
-                borderRadius: 999,
-                background: `rgba(${status === "healthy" ? "16,185,129" : status === "warning" ? "245,158,11" : "239,68,68"}, 0.25)`,
-                border: `1px solid ${statusColor[status]}`,
-                color: statusColor[status],
-                fontSize: 12,
-                fontWeight: 800,
-                textTransform: "uppercase",
-              }}
-            >
-              {status}
-            </div>
-            <div
-              style={{
-                marginTop: 12,
-                color: text,
-                fontSize: 14,
-                fontWeight: 700,
-              }}
-            >
-              System Health Status
-            </div>
-            <div
-              style={{
-                marginTop: 4,
-                color: muted,
-                fontSize: 12,
-                lineHeight: 1.5,
-              }}
-            >
-              Aggregated in real-time across departments using LangGraph
-              business logic.
+            <StatusBadge status={status} />
+            <div style={{ fontSize: 16, fontWeight: 600, marginTop: 10 }}>System Health Status</div>
+            <div style={{ fontSize: 12, color: MUTED, marginTop: 6, lineHeight: 1.6 }}>
+              Aggregated in real-time across departments using LangGraph business logic.
             </div>
           </div>
         </div>
 
-        {/* Engineering Health Breakdown */}
+        {/* Engineering Breakdown */}
         <div
           style={{
-            background: card,
-            border: `1px solid ${border}`,
-            borderRadius: 16,
+            background: CARD,
+            border: `1px solid ${BORDER}`,
+            borderRadius: 12,
             padding: 20,
-            boxShadow: shadow,
-            backdropFilter,
           }}
         >
           <div
@@ -389,82 +349,29 @@ export default function CompanyHealthWidget() {
               display: "flex",
               justifyContent: "space-between",
               alignItems: "center",
-              marginBottom: 12,
+              marginBottom: 16,
             }}
           >
-            <span
-              style={{
-                fontSize: 13,
-                fontWeight: 800,
-                color: "#6366f1",
-                textTransform: "uppercase",
-              }}
-            >
+            <span style={{ fontSize: 11, fontWeight: 600, letterSpacing: "0.5px", textTransform: "uppercase" }}>
               Engineering Health Breakdown
             </span>
-            <span
-              style={{
-                fontSize: 15,
-                fontWeight: 800,
-                color:
-                  statusColor[
-                    engScore >= 85
-                      ? "healthy"
-                      : engScore >= 65
-                        ? "warning"
-                        : "critical"
-                  ],
-              }}
-            >
-              {engScore}%
-            </span>
+            <span style={{ fontSize: 18, fontWeight: 700 }}>{engScore}%</span>
           </div>
 
-          <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-            {[
-              { label: "Deployment Success", weight: 25, value: engScore },
-              {
-                label: "CI/CD Success",
-                weight: 20,
-                value: Math.min(100, Math.round(engScore * 1.02)),
-              },
-              {
-                label: "Sprint Health",
-                weight: 20,
-                value: Math.min(100, Math.round(engScore * 0.95)),
-              },
-              {
-                label: "Issue Rate Stability",
-                weight: 15,
-                value: Math.min(100, Math.round(engScore * 0.98)),
-              },
-              {
-                label: "Infrastructure Health",
-                weight: 20,
-                value: Math.min(100, Math.round(engScore * 1.05)),
-              },
-            ].map((m) => (
+          <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+            {engMetrics.map((m) => (
               <div key={m.label}>
-                <div
-                  style={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    fontSize: 11,
-                    marginBottom: 3,
-                  }}
-                >
-                  <span style={{ fontWeight: 600 }}>
+                <div style={{ display: "flex", justifyContent: "space-between", fontSize: 12, marginBottom: 5, color: TEXT }}>
+                  <span>
                     {m.label}{" "}
-                    <span style={{ color: muted, fontSize: 10 }}>
-                      ({m.weight}%)
-                    </span>
+                    <span style={{ color: MUTED, fontSize: 11 }}>({m.weight}%)</span>
                   </span>
-                  <span style={{ fontWeight: 700 }}>{m.value}%</span>
+                  <span style={{ fontWeight: 600 }}>{m.value}%</span>
                 </div>
                 <div
                   style={{
-                    height: 5,
-                    background: border,
+                    height: 4,
+                    background: BORDER,
                     borderRadius: 999,
                     overflow: "hidden",
                   }}
@@ -473,7 +380,7 @@ export default function CompanyHealthWidget() {
                     style={{
                       width: `${m.value}%`,
                       height: "100%",
-                      background: "linear-gradient(to right, #6366f1, #3b82f6)",
+                      background: "#ffffff",
                       borderRadius: 999,
                     }}
                   />
@@ -484,25 +391,28 @@ export default function CompanyHealthWidget() {
         </div>
       </div>
 
-      {/* SubSystems Grid */}
+      {/* ── Live Subsystem Signals ── */}
       <div
         style={{
           fontSize: 11,
-          fontWeight: 800,
-          color: muted,
+          fontWeight: 600,
+          color: MUTED,
+          letterSpacing: "0.8px",
           textTransform: "uppercase",
-          letterSpacing: "1px",
-          marginBottom: 10,
+          marginBottom: 12,
+          paddingBottom: 8,
+          borderBottom: `1px solid ${BORDER}`,
         }}
       >
-        Live SubSystem Signals
+        Live Subsystem Signals
       </div>
+
       <div
         style={{
           display: "grid",
-          gridTemplateColumns: "repeat(auto-fill, minmax(220px, 1fr))",
-          gap: 16,
-          marginBottom: 24,
+          gridTemplateColumns: "repeat(3, 1fr)",
+          gap: 12,
+          marginBottom: 20,
         }}
       >
         {departments.map((d) => {
@@ -511,156 +421,122 @@ export default function CompanyHealthWidget() {
             <div
               key={d.departmentId}
               style={{
-                background: card,
-                border: `1px solid ${border}`,
-                borderRadius: 14,
+                background: CARD,
+                border: `1px solid ${BORDER}`,
+                borderRadius: 12,
                 padding: 16,
-                boxShadow: shadow,
-                backdropFilter,
               }}
             >
-              <div
-                style={{
-                  display: "flex",
-                  justifyContent: "space-between",
-                  alignItems: "center",
-                }}
-              >
-                <span style={{ fontWeight: 800, fontSize: 14 }}>
-                  {d.departmentName}
-                </span>
-                <span
-                  style={{
-                    fontSize: 11,
-                    fontWeight: 800,
-                    color: statusColor[s],
-                    textTransform: "uppercase",
-                  }}
-                >
-                  {s}
-                </span>
+              {/* Top row: icon + name + badge */}
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                  <DeptIcon id={d.departmentId} />
+                  <span style={{ fontSize: 14, fontWeight: 600 }}>{d.departmentName}</span>
+                </div>
+                <StatusBadge status={s} />
               </div>
+
+              {/* Progress bar */}
               <div
                 style={{
-                  height: 6,
-                  background: border,
+                  height: 4,
+                  background: BORDER,
                   borderRadius: 999,
-                  marginTop: 12,
                   overflow: "hidden",
+                  marginBottom: 10,
                 }}
               >
                 <div
                   style={{
                     width: `${d.healthScore ?? 0}%`,
                     height: "100%",
-                    background: statusColor[s],
+                    background: statusBar[s],
+                    borderRadius: 999,
                   }}
                 />
               </div>
-              <div
-                style={{
-                  display: "flex",
-                  justifyContent: "space-between",
-                  marginTop: 8,
-                  fontSize: 11,
-                  color: muted,
-                }}
-              >
-                <span>
-                  Score: <b>{d.healthScore}%</b>
-                </span>
+
+              {/* Score + agent */}
+              <div style={{ display: "flex", justifyContent: "space-between", fontSize: 11, color: MUTED, marginBottom: 10 }}>
+                <span>Score: <b style={{ color: TEXT }}>{d.healthScore}%</b></span>
                 <span>{d.owningAgent.replace(" Agent", "")}</span>
               </div>
-              <div
-                style={{
-                  marginTop: 10,
-                  fontSize: 11,
-                  color: text,
-                  lineHeight: 1.4,
-                  borderTop: `1px solid ${border}`,
-                  paddingTop: 8,
-                }}
-              >
-                {d.summary}
-              </div>
+
+              {/* Summary */}
+              <div style={{ fontSize: 11, color: MUTED, lineHeight: 1.5 }}>{d.summary}</div>
             </div>
           );
         })}
       </div>
 
-      {/* Recommendations */}
+      {/* ── Recommendations / All Clear ── */}
       {recommendations.length > 0 ? (
-        <>
-          <div
-            style={{
-              fontSize: 11,
-              fontWeight: 800,
-              color: muted,
-              textTransform: "uppercase",
-              letterSpacing: "1px",
-              marginBottom: 10,
-            }}
-          >
-            Top Actions Awaiting Executive Review
+        <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+          <div style={{ fontSize: 11, fontWeight: 600, color: MUTED, letterSpacing: "0.8px", textTransform: "uppercase", marginBottom: 4 }}>
+            Actions Awaiting Review
           </div>
-          <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-            {recommendations.map((r) => (
-              <div
-                key={r.recommendationId}
+          {recommendations.map((r) => (
+            <div
+              key={r.recommendationId}
+              style={{
+                background: CARD,
+                border: `1px solid ${BORDER}`,
+                borderRadius: 10,
+                padding: "12px 16px",
+                display: "flex",
+                alignItems: "center",
+                gap: 12,
+              }}
+            >
+              <span
                 style={{
-                  background: card,
-                  border: `1px solid ${border}`,
-                  borderRadius: 12,
-                  padding: "12px 16px",
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 12,
-                  boxShadow: shadow,
-                  backdropFilter,
+                  padding: "2px 8px",
+                  borderRadius: 999,
+                  border: `1px solid ${BORDER}`,
+                  color: TEXT,
+                  fontSize: 10,
+                  fontWeight: 500,
+                  textTransform: "uppercase",
                 }}
               >
-                <span
-                  style={{
-                    padding: "3px 10px",
-                    borderRadius: 999,
-                    background: priorityColor[r.priority] ?? muted,
-                    color: "#fff",
-                    fontSize: 10,
-                    fontWeight: 800,
-                    textTransform: "uppercase",
-                  }}
-                >
-                  {r.priority}
-                </span>
-                <span style={{ fontSize: 13, fontWeight: 600 }}>{r.title}</span>
-                <span
-                  style={{
-                    marginLeft: "auto",
-                    fontSize: 11,
-                    color: muted,
-                    fontWeight: 700,
-                  }}
-                >
-                  {r.incidentId} · {r.recommendationId}
-                </span>
-              </div>
-            ))}
-          </div>
-        </>
+                {r.priority}
+              </span>
+              <span style={{ fontSize: 13, color: TEXT }}>{r.title}</span>
+              <span style={{ marginLeft: "auto", fontSize: 11, color: MUTED }}>{r.incidentId}</span>
+            </div>
+          ))}
+        </div>
       ) : (
         <div
           style={{
-            background: card,
-            border: `1px solid ${border}`,
+            background: CARD,
+            border: `1px solid ${BORDER}`,
             borderRadius: 12,
-            padding: 16,
-            textAlign: "center",
-            color: muted,
-            fontSize: 13,
-            fontWeight: 600,
+            padding: "18px 24px",
+            display: "flex",
+            alignItems: "center",
+            gap: 16,
           }}
         >
-          ✅ All systems operational. No actions pending approval.
+          <div
+            style={{
+              width: 36,
+              height: 36,
+              borderRadius: "50%",
+              border: `1px solid ${BORDER}`,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              fontSize: 16,
+              flexShrink: 0,
+            }}
+          >
+            ✓
+          </div>
+          <div style={{ borderLeft: `1px solid ${BORDER}`, paddingLeft: 16 }}>
+            <div style={{ fontSize: 14, fontWeight: 600, color: TEXT }}>All systems operational.</div>
+            <div style={{ fontSize: 12, color: MUTED, marginTop: 2 }}>No actions pending approval.</div>
+          </div>
         </div>
       )}
     </div>

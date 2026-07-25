@@ -62,26 +62,21 @@ export default function MonitoringWidget() {
   const [selectedNotify, setSelectedNotify] = useState<string | null>(null);
 
   const isDark = theme === "dark";
-  const bg = isDark
-    ? "radial-gradient(circle at top left, #0f172a, #020617)"
-    : "#f8fafc";
-  const cardBg = isDark ? "rgba(30, 41, 59, 0.7)" : "#ffffff";
-  const text = isDark ? "#f8fafc" : "#0f172a";
-  const muted = isDark ? "#94a3b8" : "#64748b";
-  const border = isDark ? "rgba(51, 65, 85, 0.5)" : "#e2e8f0";
-  const shadow = isDark
-    ? "0 8px 32px 0 rgba(0, 0, 0, 0.3)"
-    : "0 4px 12px rgba(0, 0, 0, 0.05)";
-  const backdropFilter = isDark ? "blur(8px)" : "none";
+  const bg = "#060d1f";
+  const cardBg = "#0d1b35";
+  const text = "#e8edf5";
+  const muted = "#5a7299";
+  const border = "#1a2d50";
+  const shadow = "0 2px 12px rgba(0,0,0,0.4)";
+  const backdropFilter = "none";
 
   const shellStyle: React.CSSProperties = {
     padding: 32,
     textAlign: "center",
     color: text,
     background: bg,
-    borderRadius: 16,
-    fontFamily:
-      'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+    borderRadius: 8,
+    fontFamily: '"Inter", -apple-system, sans-serif',
   };
 
   if (!isReady)
@@ -116,11 +111,10 @@ export default function MonitoringWidget() {
         background: bg,
         color: text,
         padding: 24,
-        borderRadius: 16,
-        fontFamily:
-          'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+        borderRadius: 8,
+        fontFamily: '"Inter", -apple-system, sans-serif',
         border: `1px solid ${border}`,
-        boxShadow: "0 12px 40px rgba(0,0,0,0.15)",
+        boxShadow: "none",
       }}
     >
       {/* Header */}
@@ -139,9 +133,9 @@ export default function MonitoringWidget() {
             <div
               style={{
                 fontSize: 11,
-                letterSpacing: "1.2px",
-                color: "#6366f1",
-                fontWeight: 800,
+                letterSpacing: "0.5px",
+                color: "#ffffff",
+                fontWeight: 500,
                 textTransform: "uppercase",
               }}
             >
@@ -151,11 +145,12 @@ export default function MonitoringWidget() {
               <span
                 style={{
                   fontSize: 9,
-                  background: isDark ? "rgba(245,158,11,0.15)" : "#fef3c7",
-                  color: "#d97706",
+                  background: "#1c1c1c",
+                  color: "#888888",
                   padding: "1px 5px",
                   borderRadius: 4,
-                  fontWeight: 800,
+                  border: "1px solid #2a2a2a",
+                  fontWeight: 400,
                 }}
               >
                 MOCK
@@ -165,9 +160,9 @@ export default function MonitoringWidget() {
           <div
             style={{
               fontSize: 22,
-              fontWeight: 800,
+              fontWeight: 500,
               marginTop: 4,
-              letterSpacing: "-0.5px",
+              letterSpacing: "0",
             }}
           >
             Live Polling telemetry
@@ -184,7 +179,7 @@ export default function MonitoringWidget() {
             borderRadius: 8,
             padding: "8px 16px",
             fontSize: 13,
-            fontWeight: 800,
+            fontWeight: 500,
             cursor: "pointer",
             boxShadow: data.isActive
               ? "0 4px 12px rgba(239,68,68,0.2)"
@@ -229,7 +224,7 @@ export default function MonitoringWidget() {
           style={{
             background: cardBg,
             border: `1px solid ${border}`,
-            borderRadius: 12,
+            borderRadius: 8,
             padding: 16,
             boxShadow: shadow,
             backdropFilter,
@@ -238,7 +233,7 @@ export default function MonitoringWidget() {
           <div
             style={{
               fontSize: 12,
-              fontWeight: 800,
+              fontWeight: 500,
               color: muted,
               textTransform: "uppercase",
               marginBottom: 12,
@@ -258,7 +253,7 @@ export default function MonitoringWidget() {
               <span style={{ color: muted }}>Engine State:</span>
               <span
                 style={{
-                  fontWeight: 800,
+                  fontWeight: 500,
                   color: data.isActive ? "#10b981" : "#ef4444",
                   textTransform: "uppercase",
                 }}
@@ -286,7 +281,7 @@ export default function MonitoringWidget() {
           style={{
             background: cardBg,
             border: `1px solid ${border}`,
-            borderRadius: 12,
+            borderRadius: 8,
             padding: 16,
             boxShadow: shadow,
             backdropFilter,
@@ -295,7 +290,7 @@ export default function MonitoringWidget() {
           <div
             style={{
               fontSize: 12,
-              fontWeight: 800,
+              fontWeight: 500,
               color: muted,
               textTransform: "uppercase",
               marginBottom: 12,
@@ -320,7 +315,7 @@ export default function MonitoringWidget() {
               }}
             >
               <div style={{ color: muted, fontWeight: 700 }}>GitHub Action</div>
-              <div style={{ fontSize: 14, fontWeight: 800, marginTop: 2 }}>
+              <div style={{ fontSize: 14, fontWeight: 500, marginTop: 2 }}>
                 {data.githubRunsCount} Runs
               </div>
             </div>
@@ -333,7 +328,7 @@ export default function MonitoringWidget() {
               }}
             >
               <div style={{ color: muted, fontWeight: 700 }}>Jira Project</div>
-              <div style={{ fontSize: 14, fontWeight: 800, marginTop: 2 }}>
+              <div style={{ fontSize: 14, fontWeight: 500, marginTop: 2 }}>
                 {data.jiraSprintsCount} Sprint
               </div>
             </div>
@@ -349,7 +344,7 @@ export default function MonitoringWidget() {
               <div
                 style={{
                   fontSize: 14,
-                  fontWeight: 800,
+                  fontWeight: 500,
                   marginTop: 2,
                   color: data.datadogHttpCheckFailures > 0 ? "#ef4444" : text,
                 }}
@@ -368,7 +363,7 @@ export default function MonitoringWidget() {
               <div style={{ color: muted, fontWeight: 700 }}>
                 Google Calendar
               </div>
-              <div style={{ fontSize: 14, fontWeight: 800, marginTop: 2 }}>
+              <div style={{ fontSize: 14, fontWeight: 500, marginTop: 2 }}>
                 Monitoring
               </div>
             </div>
@@ -380,10 +375,10 @@ export default function MonitoringWidget() {
       <div
         style={{
           fontSize: 12,
-          fontWeight: 800,
+          fontWeight: 500,
           color: muted,
           textTransform: "uppercase",
-          letterSpacing: "1px",
+          letterSpacing: "0.4px",
           marginBottom: 12,
         }}
       >
@@ -395,7 +390,7 @@ export default function MonitoringWidget() {
           style={{
             background: cardBg,
             border: `1px solid ${border}`,
-            borderRadius: 12,
+            borderRadius: 8,
             padding: 16,
             textAlign: "center",
             color: muted,
@@ -417,7 +412,7 @@ export default function MonitoringWidget() {
                 style={{
                   background: cardBg,
                   border: `1px solid ${border}`,
-                  borderRadius: 10,
+                  borderRadius: 8,
                   overflow: "hidden",
                   boxShadow: shadow,
                 }}
@@ -442,7 +437,7 @@ export default function MonitoringWidget() {
                       background: n.type === "slack" ? "#4a154b" : "#ea4335",
                       color: "#fff",
                       fontSize: 9,
-                      fontWeight: 900,
+                      fontWeight: 600,
                       textTransform: "uppercase",
                     }}
                   >
@@ -468,7 +463,7 @@ export default function MonitoringWidget() {
                       minute: "2-digit",
                     })}
                   </span>
-                  <span style={{ fontSize: 12, color: muted, fontWeight: 800 }}>
+                  <span style={{ fontSize: 12, color: muted, fontWeight: 500 }}>
                     {isSelected ? "▼" : "▶"}
                   </span>
                 </div>
@@ -497,7 +492,7 @@ export default function MonitoringWidget() {
                     {n.type === "gmail" ? (
                       <div
                         dangerouslySetInnerHTML={{ __html: n.content }}
-                        style={{ fontFamily: "sans-serif" }}
+                        style={{ fontFamily: "\"Playfair Display\", \"Merriweather\", serif", }}
                       />
                     ) : (
                       <pre

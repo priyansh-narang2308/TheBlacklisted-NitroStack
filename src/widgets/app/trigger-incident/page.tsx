@@ -111,7 +111,7 @@ const severityColor: Record<string, string> = {
   critical: "#ef4444",
   high: "#f97316",
   medium: "#f59e0b",
-  low: "#3b82f6",
+  low: "#ffffff",
 };
 
 interface TriggerOutput {
@@ -145,26 +145,21 @@ export default function TriggerIncidentWidget() {
   ]);
 
   const isDark = theme === "dark";
-  const bg = isDark
-    ? "radial-gradient(circle at top left, #0f172a, #020617)"
-    : "#f8fafc";
-  const cardBg = isDark ? "rgba(30, 41, 59, 0.7)" : "#ffffff";
-  const text = isDark ? "#f8fafc" : "#0f172a";
-  const muted = isDark ? "#94a3b8" : "#64748b";
-  const border = isDark ? "rgba(51, 65, 85, 0.5)" : "#e2e8f0";
-  const shadow = isDark
-    ? "0 8px 32px 0 rgba(0, 0, 0, 0.3)"
-    : "0 4px 12px rgba(0, 0, 0, 0.05)";
-  const backdropFilter = isDark ? "blur(8px)" : "none";
+  const bg = "#060d1f";
+  const cardBg = "#0d1b35";
+  const text = "#e8edf5";
+  const muted = "#5a7299";
+  const border = "#1a2d50";
+  const shadow = "0 2px 12px rgba(0,0,0,0.4)";
+  const backdropFilter = "none";
 
   const shellStyle: React.CSSProperties = {
     padding: 32,
     textAlign: "center",
     color: text,
     background: bg,
-    borderRadius: 16,
-    fontFamily:
-      'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+    borderRadius: 8,
+    fontFamily: '"Inter", -apple-system, sans-serif',
   };
 
   if (!isReady)
@@ -216,11 +211,10 @@ export default function TriggerIncidentWidget() {
         background: bg,
         color: text,
         padding: 24,
-        borderRadius: 16,
-        fontFamily:
-          'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+        borderRadius: 8,
+        fontFamily: '"Inter", -apple-system, sans-serif',
         border: `1px solid ${border}`,
-        boxShadow: "0 12px 40px rgba(0,0,0,0.15)",
+        boxShadow: "none",
       }}
     >
       {/* Header */}
@@ -238,9 +232,9 @@ export default function TriggerIncidentWidget() {
           <div
             style={{
               fontSize: 11,
-              letterSpacing: "1.2px",
-              color: "#6366f1",
-              fontWeight: 800,
+              letterSpacing: "0.5px",
+              color: "#ffffff",
+              fontWeight: 500,
               textTransform: "uppercase",
             }}
           >
@@ -249,9 +243,9 @@ export default function TriggerIncidentWidget() {
           <div
             style={{
               fontSize: 22,
-              fontWeight: 800,
+              fontWeight: 500,
               marginTop: 4,
-              letterSpacing: "-0.5px",
+              letterSpacing: "0",
             }}
           >
             Multi-Agent Incident Simulator
@@ -262,11 +256,11 @@ export default function TriggerIncidentWidget() {
             style={{
               fontSize: 10,
               padding: "4px 8px",
-              background: isDark ? "rgba(99,102,241,0.2)" : "#e0e7ff",
-              color: "#6366f1",
+              background: isDark ? "#1c1c1c" : "#1c1c1c",
+              color: "#ffffff",
               borderRadius: 6,
-              fontWeight: 800,
-              border: "1px solid rgba(99,102,241,0.3)",
+              fontWeight: 500,
+              border: "1px solid #2a2a2a",
             }}
           >
             10 Scenarios
@@ -316,17 +310,17 @@ export default function TriggerIncidentWidget() {
                 style={{
                   background: isSelected
                     ? isDark
-                      ? "rgba(99, 102, 241, 0.15)"
-                      : "#eef2ff"
+                      ? "#1c1c1c"
+                      : "#252525"
                     : cardBg,
                   border: isSelected
-                    ? "1px solid #6366f1"
+                    ? "1px solid #ffffff"
                     : `1px solid ${border}`,
-                  borderRadius: 12,
+                  borderRadius: 8,
                   padding: 14,
                   cursor: "pointer",
                   boxShadow: isSelected
-                    ? "0 0 12px rgba(99,102,241,0.15)"
+                    ? "none"
                     : shadow,
                   transition: "all 0.2s ease",
                   backdropFilter,
@@ -345,9 +339,9 @@ export default function TriggerIncidentWidget() {
                       fontSize: 9,
                       padding: "2px 6px",
                       borderRadius: 4,
-                      background: severityColor[s.severity],
+                      background: "#1c1c1c",
                       color: "#fff",
-                      fontWeight: 900,
+                      fontWeight: 600,
                       textTransform: "uppercase",
                     }}
                   >
@@ -360,8 +354,8 @@ export default function TriggerIncidentWidget() {
                 <div
                   style={{
                     fontSize: 14,
-                    fontWeight: 800,
-                    color: isSelected ? "#6366f1" : text,
+                    fontWeight: 500,
+                    color: isSelected ? "#ffffff" : text,
                   }}
                 >
                   {s.name}
@@ -405,7 +399,7 @@ export default function TriggerIncidentWidget() {
           style={{
             background: cardBg,
             border: `1px solid ${border}`,
-            borderRadius: 16,
+            borderRadius: 8,
             padding: 20,
             display: "flex",
             flexDirection: "column",
@@ -418,7 +412,7 @@ export default function TriggerIncidentWidget() {
             <div
               style={{
                 fontSize: 12,
-                fontWeight: 800,
+                fontWeight: 500,
                 color: muted,
                 textTransform: "uppercase",
                 marginBottom: 12,
@@ -433,7 +427,7 @@ export default function TriggerIncidentWidget() {
               return (
                 <div>
                   <div
-                    style={{ fontSize: 18, fontWeight: 800, color: "#6366f1" }}
+                    style={{ fontSize: 18, fontWeight: 500, color: "#ffffff" }}
                   >
                     {active.name}
                   </div>
@@ -476,7 +470,7 @@ export default function TriggerIncidentWidget() {
                       <span
                         style={{
                           color: severityColor[active.severity],
-                          fontWeight: 800,
+                          fontWeight: 500,
                           textTransform: "uppercase",
                         }}
                       >
@@ -504,15 +498,15 @@ export default function TriggerIncidentWidget() {
             onClick={triggerSimulation}
             disabled={loading}
             style={{
-              background: "linear-gradient(135deg, #6366f1, #4f46e5)",
+              background: "#e67e22",
               color: "#fff",
               border: "none",
-              borderRadius: 10,
+              borderRadius: 8,
               padding: "12px 20px",
               fontSize: 14,
-              fontWeight: 800,
+              fontWeight: 500,
               cursor: "pointer",
-              boxShadow: "0 4px 14px rgba(99,102,241,0.3)",
+              boxShadow: "none",
               marginTop: 20,
               transition: "opacity 0.2s",
               opacity: loading ? 0.6 : 1,
@@ -527,10 +521,10 @@ export default function TriggerIncidentWidget() {
       <div
         style={{
           fontSize: 12,
-          fontWeight: 800,
+          fontWeight: 500,
           color: muted,
           textTransform: "uppercase",
-          letterSpacing: "1px",
+          letterSpacing: "0.4px",
           marginBottom: 10,
         }}
       >
@@ -542,7 +536,7 @@ export default function TriggerIncidentWidget() {
           maxHeight: 180,
           overflowY: "auto",
           background: isDark ? "rgba(15,23,42,0.4)" : "#f1f5f9",
-          borderRadius: 12,
+          borderRadius: 8,
           border: `1px solid ${border}`,
           padding: 12,
           display: "flex",
@@ -566,7 +560,7 @@ export default function TriggerIncidentWidget() {
           >
             <div>
               <span
-                style={{ color: "#10b981", fontWeight: 800, marginRight: 6 }}
+                style={{ color: "#10b981", fontWeight: 500, marginRight: 6 }}
               >
                 [OK]
               </span>
@@ -578,11 +572,12 @@ export default function TriggerIncidentWidget() {
                   style={{
                     marginLeft: 6,
                     fontSize: 9,
-                    background: isDark ? "rgba(245,158,11,0.15)" : "#fef3c7",
-                    color: "#d97706",
+                    background: "#1c1c1c",
+                    color: "#888888",
                     padding: "1px 4px",
                     borderRadius: 4,
-                    fontWeight: 800,
+                  border: "1px solid #2a2a2a",
+                  fontWeight: 400,
                   }}
                 >
                   MOCK
